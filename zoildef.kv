@@ -46,7 +46,18 @@
         # Add toggle Button
         ToggleButton:
             text: "Cameras On"
+            on_press: camera.play = not camera.play
     
         # Add Switch
         Switch:
             active: True
+
+        Camera:
+            id: camera
+            index: 0
+            resolution: (640, 480)
+            play: False
+
+        Button:
+            text: 'Capture'
+            on_press: root.capture()
