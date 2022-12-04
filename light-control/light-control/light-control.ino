@@ -1,11 +1,16 @@
 // Include the AccelStepper Library
 #include <AccelStepper.h>
 
-
-float inputRevs = 0;
-String input;
 int linActDone = 0;
 int yawStepperDone = 0;
+
+int i = 0;
+char inputOptions[3][13] = {"pitch angle:", "yaw angle:", "focus height:"};
+float params[3];
+float origin[3];
+int moving = 0;
+
+int pitchSteps, yawSteps, linSteps;
 
 #define STEPS_PER_REV 200
 #define GEARED_STEPS_PER_REV 10280 //needs to be updated with actual value based on motor
@@ -33,21 +38,58 @@ void setup() {
   pitchStepper.setMaxSpeed(1000);
   pitchStepper.setAcceleration(1000);
   pitchStepper.setSpeed(1000);
+
+  origin[0] = pitchStepper.currentPosition();
+  origin[1] = yawStepper.currentPosition();
+  origin[2] = linActuator.currentPosition();
  
   Serial.begin(9600);
   Serial.println("Setup complete.");
+
+  i = 0;
+  Serial.print("Enter target ");
+  Serial.println(inputOptions[i]);
 }
 
 void loop() {
   // Change direction once the motor reaches target position
-  if(Serial.available() && inputRevs == 0){
-    inputRevs = Serial.parseFloat();
-    //Serial.println(inputRevs);
-    //inputRevs = atof(input);
-    //Serial.println(myStepper.currentPosition());
-    //Serial.println(STEPS_PER_REV * inputRevs);
-    linActuator.moveTo(linActuator.currentPosition() + STEPS_PER_REV * inputRevs);
+  if(Serial.available() && moving == 0){
+    params[i] = Serial.parseFloat();
+    Serial.println(params[i]);
+    while(Serial.available()){ 
+      Serial.read();
+    }
+    if (i==2) {
+      i = 0;
+      moving = 1;
+
+      pitchSteps = params[0] * GEARED_STEPS_PER_REV / 360;
+      yawSteps = params[1] * GEARED_STEPS_PER_REV / 360;
+      linSteps = params[2] * 12.7 * STEPS_PER_REV / 360; //2mm pitch = 12.7 revs/in
+
+      pitchStepper.moveTo(origin[0] + linSteps);
+      yawStepper.moveTo(origin[1] + linSteps);
+    }
+    else {
+      i++;
+      Serial.print("Enter target ");
+      Serial.println(inputOptions[i]);
+    } 
   }
+  
+  if (moving) {
+    if (linActuator.distanceToGo() == 0 && yawStepper.distanceToGo() == 0 && pitchStepper.distanceToGo() == 0) {
+      moving = 0;
+
+      i = 0;
+      Serial.println("\nMOVED TO TARGET POSITION\n");
+      Serial.println("-----------------------------------------");
+      Serial.println("\nDEFINE NEXT TARGET POSITION\n");
+      Serial.print("Enter target ");
+      Serial.println(inputOptions[i]);
+    }
+  }
+  /**
   if (!linActDone && linActuator.distanceToGo() == 0 && inputRevs != 0) {
       Serial.print("Moved linear actuator ");
       Serial.print(inputRevs);
@@ -74,6 +116,7 @@ void loop() {
       yawStepperDone = 0;
       Serial.println("How many revolutions to turn?");
     }    
+    **/
 
 
     
