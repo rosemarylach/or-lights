@@ -55,6 +55,7 @@ void loop() {
   // Change direction once the motor reaches target position
   if(Serial.available() && moving == 0){
     params[i] = Serial.parseFloat();
+    Serial.println(i);
     Serial.println(params[i]);
     while(Serial.available()){ 
       Serial.read();
@@ -65,10 +66,12 @@ void loop() {
 
       pitchSteps = params[0] * GEARED_STEPS_PER_REV / 360;
       yawSteps = params[1] * GEARED_STEPS_PER_REV / 360;
-      linSteps = params[2] * 12.7 * STEPS_PER_REV / 360; //2mm pitch = 12.7 revs/in
+      linSteps = params[2] * 12.7 * STEPS_PER_REV; //2mm pitch = 12.7 revs/in
+      Serial.println(linSteps);
 
-      pitchStepper.moveTo(origin[0] + linSteps);
-      yawStepper.moveTo(origin[1] + linSteps);
+      pitchStepper.moveTo(origin[0] + pitchSteps);
+      yawStepper.moveTo(origin[1] + yawSteps);
+      linActuator.moveTo(origin[2] + linSteps);
     }
     else {
       i++;
