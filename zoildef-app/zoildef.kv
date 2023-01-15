@@ -1,63 +1,162 @@
 #:kivy 1.0.9
 
-<ZoilDefWidget>:    
-    canvas:
-        Rectangle:
-            source: 'data/images/background.jpg'
-            size: self.size
+PageManager:
+    LandingPage:
+    HomePage:
+    CalibrationPage:
+    DefinePage:
+    AdjustPage:
 
-    # Test Grid layout
-    GridLayout:
-        cols: 4
-        rows: 3
-        padding: 10
-    
-        # Adding label
-        Label:
-            text: "I am a Label"
-    
-        # Add Button
-        Button:
-            text: "button 1"
-    
-        # Add CheckBox
-        CheckBox:
-            active: True
-    
-        # Add Image
-        Image:
-            source: 'images/zoilbros.png'
-    
-        # Add Slider
-        Slider:
-            min: -100
-            max: 100
-            value: 25
-    
-        # Add progress Bar
-        ProgressBar:
-            min: 50
-            max: 100
-    
-        # Add TextInput
-        TextInput:
-            text: "Enter the text"
-    
-        # Add toggle Button
-        ToggleButton:
-            text: "Cameras On"
-            on_press: camera.play = not camera.play
-    
-        # Add Switch
-        Switch:
-            active: True
+<LandingPage>:
+    name: "landing_page"
 
-        Camera:
-            id: camera
-            index: 0
-            resolution: (640, 480)
-            play: False
+    FloatLayout:
 
         Button:
-            text: 'Capture'
-            on_press: root.capture()
+            text: "CONNECT"
+            size_hint: (0.3, 0.2)
+            pos_hint: {'x': 0.35, "y": 0.2}
+
+            on_release:
+                app.root.current = "home_page"
+                root.manager.transition.direction = "left"
+
+<HomePage>:
+    name: "home_page"
+
+    FloatLayout:
+        # Image:
+        #     source: 'images/body.jpg'
+        #     size_hint: (0.3, 0.7)
+        #     pos_hint: {"x": 0.1, "y": 0.15}
+
+        KivyCamera:
+            # 9x16 aspect ratio --> 0.45x0.8
+            # size_hint:(0.45, 0.8)
+            size_hint_y: 0.9
+            size_hint_x: 0.5
+            # width: self.height * 9 / 16
+            pos_hint: {"center_x": 0.25, "center_y": 0.5}
+
+        Button:
+            text: "Calibrate"
+            size_hint: (0.3, 0.2)
+            pos_hint: {"center_x": 0.75, "center_y": 0.75}
+
+            on_release:
+                app.root.current = "calibration_page"
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "Define ZOIL"
+            size_hint: (0.3, 0.2)
+            pos_hint: {"center_x": 0.75, "center_y": 0.5}
+
+            on_release:
+                app.root.current = "define_page"
+                root.manager.transition.direction = "left"
+
+        Button:
+            text: "Load Configuration"
+            size_hint: (0.3, 0.2)
+            pos_hint: {"center_x": 0.75, "center_y": 0.25}
+
+            on_release:
+                app.root.current = "home_page"
+                root.manager.transition.direction = "left"
+
+<CalibrationPage>:
+    name: "calibration_page"
+
+<DefinePage>:
+    name: "define_page"
+
+    FloatLayout:
+        
+        KivyCamera:
+            # 9x16 aspect ratio --> 0.45x0.8
+            # or just select 0.9 height
+            id: vid
+            size_hint_y: 0.9
+            size_hint_x: 0.5
+            pos_hint: {"center_x": 0.25, "center_y": 0.5}
+
+        # DrawingWidget:
+        #     size: vid.norm_image_size
+        #     pos_hint: {"center_x": 0.25, "center_y": 0.5}
+
+        Button:
+            text: "Home"
+            size_hint: (0.3, 0.2)
+            pos_hint: {"center_x": 0.75, "center_y": 0.25}
+
+            on_release:
+                app.root.current = "home_page"
+                root.manager.transition.direction = "left"
+
+        
+
+<AdjustPage>:
+    name: "adjust_page"
+
+# <ZoilDefLayout>:    
+#     canvas:
+#         Rectangle:
+#             source: 'data/images/background.jpg'
+#             size: self.size
+
+#     # Test Grid layout
+#     GridLayout:
+#         cols: 4
+#         rows: 3
+#         padding: 10
+    
+#         # Adding label
+#         Label:
+#             text: "I am a Label"
+    
+#         # Add Button
+#         Button:
+#             text: "button 1"
+    
+#         # Add CheckBox
+#         CheckBox:
+#             active: True
+    
+#         # Add Image
+#         Image:
+#             source: 'images/zoilbros.png'
+    
+#         # Add Slider
+#         Slider:
+#             min: -100
+#             max: 100
+#             value: 25
+    
+#         # Add progress Bar
+#         ProgressBar:
+#             min: 50
+#             max: 100
+    
+#         # Add TextInput
+#         TextInput:
+#             text: "Enter the text"
+    
+#         # Add toggle Button
+#         ToggleButton:
+#             text: "Cameras On"
+#             on_press: camera.play = not camera.play
+    
+#         # Add Switch
+#         Switch:
+#             active: True
+
+#         Camera:
+#             id: camera
+#             index: 0
+#             resolution: (640, 480)
+#             play: False
+
+#         Button:
+#             text: 'Capture'
+#             on_press: root.capture()
