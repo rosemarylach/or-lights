@@ -31,50 +31,7 @@ class CalibrationPage(Screen):
     pass
 
 class DefinePage(Screen):
-    # def __init__(self, **kwargs):
-    #     super(Touch, self).__init__(**kwargs)
-
-    #     with self.canvas:
-    #         Line(points=(20,30,400,500,60,500))
-    #         Color(1,0,0,0.5, mode="rgba")
-    #         self.rect = Rectangle(pos=(0,0), size=(50,50))
-
-    # def on_touch_down(self, touch):
-    #     with self.canvas:
-    #         Color(1, 0, 0, 0.5, mode="rgba")
-    #         self.x = touch.pos[0]
-    #         self.y = touch.pos[1]
-    #         self.line = Line(circle=(self.x, self.y, 1))
-
-    # def on_touch_move(self, touch):
-    #     with self.canvas:
-    #         Color(1, 0, 0, 0.5, mode="rgba")
-    #         self.line = Line(circle=(self.x, self.y, math.sqrt((self.x - touch.pos[0])**2 + (self.y - touch.pos[1])**2)))
-    
-    def on_touch_down(self, touch):
-        with self.canvas:
-            self.cent_x = touch.pos[0]
-            self.cent_y = touch.pos[1]
-            self.circ = Line(circle=(self.cent_x, self.cent_y, 0))
-
-    def on_touch_move(self, touch):
-        with self.canvas:
-            self.canvas.remove(self.circ)
-            Color(1, 0, 0, 0.5, mode="rgba")
-            self.rad = math.sqrt((self.cent_x - touch.pos[0])**2 + (self.cent_y - touch.pos[1])**2)
-            self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
-
-    def on_touch_up(self, touch):
-        self.len_size = 6.75
-        self.width_size = 2
-
-        diff_x = (self.cent_x - self.ids.vid.center_x) * self.width_size / self.ids.vid.norm_image_size[0]
-        diff_y = (self.cent_y - self.ids.vid.center_y) * self.len_size / self.ids.vid.norm_image_size[1]
-        diff_rad = self.rad * self.width_size / self.ids.vid.norm_image_size[0]
-        # print(self.ids.vid.norm_image_size)
-        # print("full center: ", self.ids.vid.center_x, self.ids.vid.center_y)
-        # print("circ center: ", self.cent_x, self.cent_y, self.rad)
-        print("coords: ", diff_x, diff_y, diff_rad)
+    pass
 
 class AdjustPage(Screen):
     pass
@@ -95,9 +52,9 @@ class PageManager(ScreenManager):
 #         print("Captured")
 
 class KivyCamera(Image):
-    def __init__(self, fps=50, **kwargs):
+    def __init__(self, fps=10, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
-        ip = "rtsp://zoilcam:zoilZOIL!@10.216.77.47/stream1"
+        ip = "rtsp://zoilcam:zoilZOIL!@10.219.79.120/stream1"
         capture = cv2.VideoCapture(ip)
         self.capture = capture
         Clock.schedule_interval(self.update, 1.0 / fps)
@@ -110,7 +67,7 @@ class KivyCamera(Image):
             crop_dim_scaling = 1/3
             crop = rot_flip[int(rot_flip.shape[0]/2 - rot_flip.shape[0]*crop_dim_scaling/2):int(rot_flip.shape[0]/2 + rot_flip.shape[0]*crop_dim_scaling/2),
                 int(rot_flip.shape[1]/2 - rot_flip.shape[1]*crop_dim_scaling/2):int(rot_flip.shape[1]/2 + rot_flip.shape[1]*crop_dim_scaling/2)]
-            buf = crop.tostring()
+            buf = crop.tobytes()
 
             # flip crop dimensions in size because orgiginal frame was rotated
             image_texture = Texture.create(
@@ -119,35 +76,58 @@ class KivyCamera(Image):
             # display image from the texture
             self.texture = image_texture
 
-# class DrawingWidget(Widget):
-#     def __init__(self, **kwargs):
-#         super(DrawingWidget, self).__init__(**kwargs)
+class DrawingWidget(Widget):
+    def __init__(self, **kwargs):
+        super(DrawingWidget, self).__init__(**kwargs)
+        self.cent_x = 0
+        self.cent_y = 0
+        self.rad = 0
+        with self.canvas:
+            self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
 
-#     def on_touch_down(self, touch):
-#         with self.canvas:
-#             self.cent_x = touch.pos[0]
-#             self.cent_y = touch.pos[1]
-#             self.circ = Line(circle=(self.cent_x, self.cent_y, 0))
+    def on_touch_down(self, touch):
+        if self.collide_point(touch.x, touch.y):
+            self.cent_x = touch.x
+            self.cent_y = touch.y
+            self.rad = 0
+            with self.canvas:
+                self.canvas.remove(self.circ)
+                self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
 
-#     def on_touch_move(self, touch):
-#         with self.canvas:
-#             self.canvas.clear()
-#             Color(1, 0, 0, 0.5, mode="rgba")
-#             self.rad = math.sqrt((self.cent_x - touch.pos[0])**2 + (self.cent_y - touch.pos[1])**2)
-#             self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
+    def on_touch_move(self, touch):
+        
+        new_rad = math.sqrt((self.cent_x - touch.x)**2 + (self.cent_y - touch.y)**2)
 
-#     def on_touch_up(self, touch):
-#         self.len_size = 2
-#         self.width_size = 4
-#         print(self.ids.vid.norm_image_size)
-#         # print(self.ids)
-#         print("full center: ", self.center_x, self.center_y)
-#         print("circ center: ", self.cent_x, self.cent_y, self.rad)
+        if (self.collide_point(self.cent_x + new_rad, self.cent_y) and
+            self.collide_point(self.cent_x - new_rad, self.cent_y) and
+            self.collide_point(self.cent_x, self.cent_y + new_rad) and
+            self.collide_point(self.cent_x, self.cent_y - new_rad)):
+            
+            self.rad = new_rad
+
+            with self.canvas:
+                # self.canvas.clear()
+                self.canvas.remove(self.circ)
+                Color(1, 0, 0, 0.5, mode="rgba")
+                self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
+
+    def on_touch_up(self, touch):
+        if self.collide_point(touch.x, touch.y):
+            self.len_size = 6.75
+            self.width_size = 2
+
+            diff_x = (self.cent_x - self.center_x) * self.width_size / self.width
+            diff_y = (self.cent_y - self.center_y) * self.len_size / self.height
+            diff_rad = self.rad * self.width_size / self.width
+            # print(self.ids.vid.norm_image_size)
+            # print("full center: ", self.ids.vid.center_x, self.ids.vid.center_y)
+            # print("circ center: ", self.cent_x, self.cent_y, self.rad)
+            print("coords: ", diff_x, diff_y, diff_rad)
 
 
 layout = Builder.load_file("zoildef.kv")
 
-class ZoilDefApp(App):
+class ZoilApp(App):
     title = "ZoilDef App"
 
     def build(self):
@@ -159,4 +139,5 @@ class ZoilDefApp(App):
 
 
 if __name__ == '__main__':
-    ZoilDefApp().run()
+    Window.clearcolor = (0, 0, 0, 1)
+    ZoilApp().run()

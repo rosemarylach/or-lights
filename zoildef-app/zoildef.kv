@@ -31,10 +31,16 @@ PageManager:
         #     pos_hint: {"x": 0.1, "y": 0.15}
 
         KivyCamera:
+            # canvas:
+            #     Color:
+            #         rgba: 1, 0, 0, 0.3
+            #     Rectangle:
+            #         pos: self.pos  # incorrect
+            #         size: self.size
             # 9x16 aspect ratio --> 0.45x0.8
-            # size_hint:(0.45, 0.8)
+            allow_stretch: True
             size_hint_y: 0.9
-            size_hint_x: 0.5
+            size_hint_x: 0.9* 9/16 * root.height / root.width
             # width: self.height * 9 / 16
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
@@ -76,14 +82,29 @@ PageManager:
         KivyCamera:
             # 9x16 aspect ratio --> 0.45x0.8
             # or just select 0.9 height
+            # canvas:
+            #     Color:
+            #         rgba: 1, 0, 0, 0.3
+            #     Rectangle:
+            #         pos: self.pos  # incorrect
+            #         size: self.size
             id: vid
+            allow_stretch: True
             size_hint_y: 0.9
-            size_hint_x: 0.5
+            size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
-        # DrawingWidget:
-        #     size: vid.norm_image_size
-        #     pos_hint: {"center_x": 0.25, "center_y": 0.5}
+        DrawingWidget:
+            size: vid.texture_size
+            size_hint_y: 0.9
+            size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
+            pos_hint: {"center_x": 0.25, "center_y": 0.5}
+            # canvas:
+            #     Color:
+            #         rgba: 0, 0, 1, 0.3
+            #     Rectangle:
+            #         pos: self.pos  # incorrect
+            #         size: self.size
 
         Button:
             text: "Home"
