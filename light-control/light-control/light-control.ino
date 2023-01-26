@@ -13,7 +13,8 @@ int moving = 0;
 int pitchSteps, yawSteps, linSteps;
 
 #define STEPS_PER_REV 200
-#define GEARED_STEPS_PER_REV 10280 //needs to be updated with actual value based on motor
+#define PITCH_STEPS_PER_REV 10280 //gearbox ratio + 200 steps per rev
+#define YAW_STEPS_PER_REV 51400 //50:10 design ratio + gearbox ratio + 200 steps per rev
 
 
 // Define motor interface type
@@ -55,7 +56,6 @@ void loop() {
   // Change direction once the motor reaches target position
   if(Serial.available() && moving == 0){
     params[i] = Serial.parseFloat();
-    Serial.println(i);
     Serial.println(params[i]);
     while(Serial.available()){ 
       Serial.read();
@@ -64,8 +64,8 @@ void loop() {
       i = 0;
       moving = 1;
 
-      pitchSteps = params[0] * GEARED_STEPS_PER_REV / 360;
-      yawSteps = params[1] * GEARED_STEPS_PER_REV / 360;
+      pitchSteps = params[0] * PITCH_STEPS_PER_REV / 360;
+      yawSteps = params[1] * YAW_STEPS_PER_REV / 360;
       linSteps = params[2] * 12.7 * STEPS_PER_REV; //2mm pitch = 12.7 revs/in
       Serial.println(linSteps);
 
