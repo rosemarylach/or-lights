@@ -1,5 +1,13 @@
 #:kivy 1.0.9
 
+# use below to view widget space:
+# canvas:
+#     Color:
+#         rgba: 0, 0, 1, 0.3
+#     Rectangle:
+#         pos: self.pos  # incorrect
+#         size: self.size
+
 PageManager:
     LandingPage:
     HomePage:
@@ -25,23 +33,11 @@ PageManager:
     name: "home_page"
 
     FloatLayout:
-        # Image:
-        #     source: 'images/body.jpg'
-        #     size_hint: (0.3, 0.7)
-        #     pos_hint: {"x": 0.1, "y": 0.15}
 
         KivyCamera:
-            # canvas:
-            #     Color:
-            #         rgba: 1, 0, 0, 0.3
-            #     Rectangle:
-            #         pos: self.pos  # incorrect
-            #         size: self.size
-            # 9x16 aspect ratio --> 0.45x0.8
             allow_stretch: True
             size_hint_y: 0.9
             size_hint_x: 0.9* 9/16 * root.height / root.width
-            # width: self.height * 9 / 16
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
         Button:
@@ -74,37 +70,30 @@ PageManager:
 <CalibrationPage>:
     name: "calibration_page"
 
-<DefinePage>:
-    name: "define_page"
-
     FloatLayout:
         
         KivyCamera:
-            # 9x16 aspect ratio --> 0.45x0.8
-            # or just select 0.9 height
-            # canvas:
-            #     Color:
-            #         rgba: 1, 0, 0, 0.3
-            #     Rectangle:
-            #         pos: self.pos  # incorrect
-            #         size: self.size
-            id: vid
             allow_stretch: True
             size_hint_y: 0.9
             size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
-        DrawingWidget:
-            size: vid.texture_size
+        RectDrawingWidget:
             size_hint_y: 0.9
             size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
-            # canvas:
-            #     Color:
-            #         rgba: 0, 0, 1, 0.3
-            #     Rectangle:
-            #         pos: self.pos  # incorrect
-            #         size: self.size
+
+        TextInput:
+            size_hint: (0.3, 0.1)
+            pos_hint: {"center_x": 0.75, "center_y": 0.8}
+
+        TextInput:
+            size_hint: (0.3, 0.1)
+            pos_hint: {"center_x": 0.75, "center_y": 0.65}
+
+        TextInput:
+            size_hint: (0.3, 0.1)
+            pos_hint: {"center_x": 0.75, "center_y": 0.5}
 
         Button:
             text: "Home"
@@ -115,69 +104,31 @@ PageManager:
                 app.root.current = "home_page"
                 root.manager.transition.direction = "left"
 
+
+<DefinePage>:
+    name: "define_page"
+
+    FloatLayout:
         
+        KivyCamera:
+            allow_stretch: True
+            size_hint_y: 0.9
+            size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
+            pos_hint: {"center_x": 0.25, "center_y": 0.5}
+
+        CircleDrawingWidget:
+            size_hint_y: 0.9
+            size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
+            pos_hint: {"center_x": 0.25, "center_y": 0.5}
+
+        Button:
+            text: "Home"
+            size_hint: (0.3, 0.2)
+            pos_hint: {"center_x": 0.75, "center_y": 0.25}
+
+            on_release:
+                app.root.current = "home_page"
+                root.manager.transition.direction = "left"
 
 <AdjustPage>:
     name: "adjust_page"
-
-# <ZoilDefLayout>:    
-#     canvas:
-#         Rectangle:
-#             source: 'data/images/background.jpg'
-#             size: self.size
-
-#     # Test Grid layout
-#     GridLayout:
-#         cols: 4
-#         rows: 3
-#         padding: 10
-    
-#         # Adding label
-#         Label:
-#             text: "I am a Label"
-    
-#         # Add Button
-#         Button:
-#             text: "button 1"
-    
-#         # Add CheckBox
-#         CheckBox:
-#             active: True
-    
-#         # Add Image
-#         Image:
-#             source: 'images/zoilbros.png'
-    
-#         # Add Slider
-#         Slider:
-#             min: -100
-#             max: 100
-#             value: 25
-    
-#         # Add progress Bar
-#         ProgressBar:
-#             min: 50
-#             max: 100
-    
-#         # Add TextInput
-#         TextInput:
-#             text: "Enter the text"
-    
-#         # Add toggle Button
-#         ToggleButton:
-#             text: "Cameras On"
-#             on_press: camera.play = not camera.play
-    
-#         # Add Switch
-#         Switch:
-#             active: True
-
-#         Camera:
-#             id: camera
-#             index: 0
-#             resolution: (640, 480)
-#             play: False
-
-#         Button:
-#             text: 'Capture'
-#             on_press: root.capture()

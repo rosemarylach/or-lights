@@ -2,7 +2,6 @@ from kivy.app import App
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.app import App
-from kivy.graphics import Rectangle
 from kivy.graphics import Color
 
 from kivy.graphics import Line
@@ -54,7 +53,7 @@ class PageManager(ScreenManager):
 class KivyCamera(Image):
     def __init__(self, fps=10, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
-        ip = "rtsp://zoilcam:zoilZOIL!@10.219.79.120/stream1"
+        ip = "rtsp://zoilcam:zoilZOIL!@10.216.78.53/stream1"
         capture = cv2.VideoCapture(ip)
         self.capture = capture
         Clock.schedule_interval(self.update, 1.0 / fps)
@@ -76,9 +75,9 @@ class KivyCamera(Image):
             # display image from the texture
             self.texture = image_texture
 
-class DrawingWidget(Widget):
+class CircleDrawingWidget(Widget):
     def __init__(self, **kwargs):
-        super(DrawingWidget, self).__init__(**kwargs)
+        super(CircleDrawingWidget, self).__init__(**kwargs)
         self.cent_x = 0
         self.cent_y = 0
         self.rad = 0
@@ -106,9 +105,8 @@ class DrawingWidget(Widget):
             self.rad = new_rad
 
             with self.canvas:
-                # self.canvas.clear()
                 self.canvas.remove(self.circ)
-                Color(1, 0, 0, 0.5, mode="rgba")
+                Color(1, 0, 0, 1, mode="rgba")
                 self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
 
     def on_touch_up(self, touch):
@@ -123,6 +121,57 @@ class DrawingWidget(Widget):
             # print("full center: ", self.ids.vid.center_x, self.ids.vid.center_y)
             # print("circ center: ", self.cent_x, self.cent_y, self.rad)
             print("coords: ", diff_x, diff_y, diff_rad)
+
+class RectDrawingWidget(Widget):
+    def __init__(self, **kwargs):
+        super(RectDrawingWidget, self).__init__(**kwargs)
+        with self.canvas:
+            self.rect = Line(rectangle=(0, 0, 0, 0))
+
+    def on_touch_down(self, touch):
+        self.corner1 = (touch.x, touch.y)
+        self.corner2 = (touch.x, touch.y)
+
+        if self.collide_point(touch.x, touch.y):
+            with self.canvas:
+                self.canvas.remove(self.rect)
+                self.rect = Line(rectangle=(touch.x, touch.y, 0, 0))
+
+    def on_touch_move(self, touch):
+        self.corner2 = (touch.x, touch.y)
+
+        if (self.collide_point(self.corner1[0], self.corner1[1]) and
+            self.collide_point(self.corner2[0], self.corner2[1])):
+
+            pos_x = min(self.corner1[0], self.corner2[0])
+            pos_y = min(self.corner1[1], self.corner2[1])
+
+            cal_height = abs(self.corner1[1] - self.corner2[1])
+            cal_width = abs(self.corner1[0] - self.corner2[0])
+
+            with self.canvas:
+                self.canvas.remove(self.rect)
+                Color(0, 1, 0, 1, mode="rgba")
+                self.rect = Line(rectangle=(pos_x, pos_y, cal_width, cal_height))
+
+    def on_touch_up(self, touch):
+        if self.collide_point(touch.x, touch.y):
+            self.len_size = 6.75
+            self.width_size = 2
+
+            pos_x = min(self.corner1[0], self.corner2[0])
+            pos_y = min(self.corner1[1], self.corner2[1])
+
+            cal_height = abs(self.corner1[1] - self.corner2[1])
+            cal_width = abs(self.corner1[0] - self.corner2[0])
+
+            # diff_x = (self.cent_x - self.center_x) * self.width_size / self.width
+            # diff_y = (self.cent_y - self.center_y) * self.len_size / self.height
+            # diff_rad = self.rad * self.width_size / self.width
+            # print(self.ids.vid.norm_image_size)
+            # print("full center: ", self.ids.vid.center_x, self.ids.vid.center_y)
+            # print("circ center: ", self.cent_x, self.cent_y, self.rad)
+            print("coords: ", pos_x, pos_y, cal_height, cal_width)
 
 
 layout = Builder.load_file("zoildef.kv")
