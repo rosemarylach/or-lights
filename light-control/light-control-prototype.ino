@@ -1,8 +1,8 @@
 // Include the AccelStepper Library
 #include <AccelStepper.h>
 
-int linActDone = 0;
-int yawStepperDone = 0;
+//int linActDone = 0;
+//int yawStepperDone = 0;
 
 int i = 0;
 char inputOptions[3][13] = {"pitch angle:", "yaw angle:", "focus height:"};
@@ -67,7 +67,6 @@ void loop() {
       pitchSteps = params[0] * PITCH_STEPS_PER_REV / 360;
       yawSteps = params[1] * YAW_STEPS_PER_REV / 360;
       linSteps = params[2] * 12.7 * STEPS_PER_REV; //2mm pitch = 12.7 revs/in
-      Serial.println(linSteps);
 
       pitchStepper.moveTo(origin[0] + pitchSteps);
       yawStepper.moveTo(origin[1] + yawSteps);
