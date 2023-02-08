@@ -1,4 +1,7 @@
 from kivy.app import App
+from kivymd.app import MDApp
+from kivymd.uix.slider import slider
+from kivymd.uix.button import button
 from kivy.lang import Builder
 from kivy.core.window import Window
 from kivy.app import App
@@ -51,15 +54,16 @@ class PageManager(ScreenManager):
 #         print("Captured")
 
 class KivyCamera(Image):
+    ip = "rtsp://zoilcam:zoilZOIL!@168.5.71.3/stream1"
+    capture = cv2.VideoCapture(ip)
+
     def __init__(self, fps=10, **kwargs):
         super(KivyCamera, self).__init__(**kwargs)
-        ip = "rtsp://zoilcam:zoilZOIL!@10.216.78.53/stream1"
-        capture = cv2.VideoCapture(ip)
-        self.capture = capture
+        # self.source = "images/body.jpg"
         Clock.schedule_interval(self.update, 1.0 / fps)
 
     def update(self, dt):
-        ret, frame = self.capture.read()
+        ret, frame = KivyCamera.capture.read()
         if ret:
             # convert it to texture
             rot_flip = cv2.rotate(cv2.flip(frame, 0), cv2.ROTATE_90_CLOCKWISE)
@@ -76,13 +80,24 @@ class KivyCamera(Image):
             self.texture = image_texture
 
 class CircleDrawingWidget(Widget):
+
     def __init__(self, **kwargs):
         super(CircleDrawingWidget, self).__init__(**kwargs)
         self.cent_x = 0
         self.cent_y = 0
         self.rad = 0
+
+        # self.min_rad = 0
+        # self.max_rad = self.width
         with self.canvas:
             self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
+
+    def shift(self, x_shift, y_shift):
+        self.cent_x -= x_shift
+        self.cent_y -= y_shift
+        
+    def resize(self, new_rad):
+        self.rad = new_rad
 
     def on_touch_down(self, touch):
         if self.collide_point(touch.x, touch.y):
@@ -174,13 +189,12 @@ class RectDrawingWidget(Widget):
             print("coords: ", pos_x, pos_y, cal_height, cal_width)
 
 
-layout = Builder.load_file("zoildef.kv")
-
-class ZoilApp(App):
+class ZoilApp(MDApp):
     title = "ZoilDef App"
 
     def build(self):
         # layout =  ZoilDefLayout()
+        layout = Builder.load_file("zoildef.kv")
         return layout
 
     def on_pause(self):

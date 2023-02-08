@@ -15,6 +15,18 @@ PageManager:
     DefinePage:
     AdjustPage:
 
+
+# <RightTriangleButton@Button>:
+#     canvas:
+#         # Color:
+#         #     rgba: 0, 1, 0, 0.5
+#         # RoundedRectangle:
+#         #     size: self.size
+#         #     pos: self.pos
+#         #     radius: [55]  #---- This rounds the corners --- #
+#         Triangle:
+#             points:[self.x, self.y, self.x, self.y+self.height, self.x+self.width, self.y+self.height/2]
+
 <LandingPage>:
     name: "landing_page"
 
@@ -79,6 +91,7 @@ PageManager:
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
         RectDrawingWidget:
+            id: cal_dims
             size_hint_y: 0.9
             size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
@@ -95,8 +108,8 @@ PageManager:
             size_hint: (0.3, 0.1)
             pos_hint: {"center_x": 0.75, "center_y": 0.5}
 
-        Button:
-            text: "Home"
+        MDIconButton:
+            icon: "home"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.25}
 
@@ -117,18 +130,33 @@ PageManager:
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
         CircleDrawingWidget:
+            id: zoil_coords
             size_hint_y: 0.9
             size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
-        Button:
-            text: "Home"
+        # Button:
+        #     text: "Home"
+        #     size_hint: (0.3, 0.2)
+        #     pos_hint: {"center_x": 0.75, "center_y": 0.25}
+
+        #     on_release:
+        #         app.root.current = "home_page"
+        #         root.manager.transition.direction = "left"
+
+        MDIconButton:
+            icon: "home"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.25}
 
             on_release:
                 app.root.current = "home_page"
                 root.manager.transition.direction = "left"
+
+        MDSlider:
+            size_hint: (0.5, 0.1)
+            hint: False
+            pos_hint: {"center_x": 0.75, "center_y": 0.5}
 
 <AdjustPage>:
     name: "adjust_page"
