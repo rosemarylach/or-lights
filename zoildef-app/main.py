@@ -54,7 +54,7 @@ class PageManager(ScreenManager):
 #         print("Captured")
 
 class KivyCamera(Image):
-    ip = "rtsp://zoilcam:zoilZOIL!@168.5.71.3/stream1"
+    ip = "rtsp://zoilcam:zoilZOIL!@168.5.91.76/stream1"
     capture = cv2.VideoCapture(ip)
 
     def __init__(self, fps=10, **kwargs):
@@ -93,11 +93,36 @@ class CircleDrawingWidget(Widget):
             self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
 
     def shift(self, x_shift, y_shift):
-        self.cent_x -= x_shift
-        self.cent_y -= y_shift
+        new_cent_x = self.cent_x + x_shift
+        new_cent_y = self.cent_y + y_shift
+
+        if (self.collide_point(new_cent_x + self.rad, new_cent_y) and
+            self.collide_point(new_cent_x - self.rad, new_cent_y) and
+            self.collide_point(new_cent_x, new_cent_y + self.rad) and
+            self.collide_point(new_cent_x, new_cent_y - self.rad)):
+
+            self.cent_x = new_cent_x
+            self.cent_y = new_cent_y
+
+            with self.canvas:
+                self.canvas.remove(self.circ)
+                Color(1, 0, 0, 1, mode="rgba")
+                self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
         
-    def resize(self, new_rad):
-        self.rad = new_rad
+    def resize(self, rad_change):
+        new_rad = self.rad + rad_change
+
+        if (self.collide_point(self.cent_x + new_rad, self.cent_y) and
+            self.collide_point(self.cent_x - new_rad, self.cent_y) and
+            self.collide_point(self.cent_x, self.cent_y + new_rad) and
+            self.collide_point(self.cent_x, self.cent_y - new_rad)):
+
+            self.rad = new_rad
+
+            with self.canvas:
+                self.canvas.remove(self.circ)
+                Color(1, 0, 0, 1, mode="rgba")
+                self.circ = Line(circle=(self.cent_x, self.cent_y, self.rad))
 
     def on_touch_down(self, touch):
         if self.collide_point(touch.x, touch.y):
