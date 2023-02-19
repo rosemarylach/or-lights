@@ -4,14 +4,13 @@ float input_steps;
 
 #define motorInterfaceType 1
 
-AccelStepper testMotor(motorInterfaceType, 15, 14); //15,14
+AccelStepper testMotor(motorInterfaceType, 31, 30); //15,14
 
 void setup() {
   // put your setup code here, to run once:
-  testMotor.setMaxSpeed(100);
-  testMotor.setAcceleration(100);
+  testMotor.setMaxSpeed(1000);
+  testMotor.setAcceleration(1000);
   testMotor.setSpeed(1000);
-
   Serial.begin(9600);
   Serial.println("Setup complete.");
 
