@@ -1,0 +1,17 @@
+Firmware Features & To Do:
+
+-Set up pin number constants for all pins
+
+-Fan TACH readings
+-Fan PWM output
+-PWM output based on TACH readings
+
+-Import Rosemary UART and WiFi stuff
+-Parsing WiFi into a string
+
+-Dimmer driving code
+
+-Motor driver motion code
+-Motor driver start motion code
+
+-Calibration/startup code

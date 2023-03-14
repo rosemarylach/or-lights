@@ -3,8 +3,8 @@
 float input_steps;
 
 #define motorInterfaceType 1
-
-AccelStepper testMotor(motorInterfaceType, 31, 30); //15,14
+//AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
+AccelStepper testMotor(motorInterfaceType, 49, 48); //15,14
 
 void setup() {
   // put your setup code here, to run once:
