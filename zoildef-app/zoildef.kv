@@ -15,23 +15,12 @@ PageManager:
     DefinePage:
     AdjustPage:
 
-# <RightTriangleButton@Button>:
-#     canvas:
-#         # Color:
-#         #     rgba: 0, 1, 0, 0.5
-#         # RoundedRectangle:
-#         #     size: self.size
-#         #     pos: self.pos
-#         #     radius: [55]  #---- This rounds the corners --- #
-#         Triangle:
-#             points:[self.x, self.y, self.x, self.y+self.height, self.x+self.width, self.y+self.height/2]
-
 <LandingPage>:
     name: "landing_page"
 
     FloatLayout:
 
-        Button:
+        MDRectangleFlatButton:
             text: "CONNECT"
             size_hint: (0.3, 0.2)
             pos_hint: {'x': 0.35, "y": 0.2}
@@ -51,7 +40,7 @@ PageManager:
             size_hint_x: 0.9* 9/16 * root.height / root.width
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
-        Button:
+        MDRectangleFlatButton:
             text: "Calibrate"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.75}
@@ -60,7 +49,7 @@ PageManager:
                 app.root.current = "calibration_page"
                 root.manager.transition.direction = "left"
 
-        Button:
+        MDRectangleFlatButton:
             text: "Define ZOIL"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.5}
@@ -69,7 +58,7 @@ PageManager:
                 app.root.current = "define_page"
                 root.manager.transition.direction = "left"
 
-        Button:
+        MDRectangleFlatButton:
             text: "Load Configuration"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.25}
@@ -137,11 +126,19 @@ PageManager:
         MDIconButton:
             icon: "home"
             size_hint: (0.3, 0.2)
-            pos_hint: {"center_x": 0.75, "center_y": 0.15}
+            pos_hint: {"center_x": 0.825, "center_y": 0.15}
 
             on_release:
                 app.root.current = "home_page"
                 root.manager.transition.direction = "left"
+
+        MDRectangleFlatButton:
+            text: "Confirm\nZOIL"
+            size_hint: (0.15, 0.1)
+            pos_hint:{"center_x": 0.675, "center_y": 0.15}
+
+            on_release:
+                my_config.transmit()
 
         MDIconButton:
             icon: "chevron-down-circle-outline"
