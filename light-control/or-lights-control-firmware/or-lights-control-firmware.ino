@@ -56,6 +56,15 @@
 
 //OTHER
 #define motorInterfaceType 1
+#define USE_SERIAL Serial
+#define DIMMER_DELAY 8.33 //8.33ms delay for 60Hz waveform
+
+//DIMMER VARIABLE INITIALIZATION
+unsigned char dimVal;
+unsigned char clock_tick;
+unsigned int delay_time = 50;
+int lux;
+int outVal = 0;
 
 //ACCELSTEPPER INSTANTIATION -- myStepper(motorInterfaceType, stepPin, dirPin);
 AccelStepper drivers[4][3] = {
@@ -116,7 +125,64 @@ void setup() {
     }
   }
 
+  //Configure dimmer output and input pins
+  pinMode(DIM_CH1, OUTPUT);
+  pinMode(DIM_CH2, OUTPUT);
+  pinMode(DIM_CH3, OUTPUT);
+  pinMode(DIM_CH4, OUTPUT);
+  pinMode(DIM_CH5, OUTPUT);
+  pinMode(DIM_CH6, OUTPUT);
+  pinMode(DIM_CH7, OUTPUT);
+  pinMode(DIM_CH8, OUTPUT);
 
+  attachInterrupt(digitalPinToINterrupt(2), zero_crosss_int, RISING);
+
+  Timer1.initialize(83);
+  Timer1.attachInterrupt(timerIsr);
+
+}
+
+void timerIsr(){
+  /**
+  void timerIsr()
+
+  Timer interrupt service routing for managing dimmer output values.
+  Called when interrupt is triggered on Timer1 by 
+
+  */
+  clock_tick ++;
+
+  if (dimVal == clock_tick) {
+    digitalWrite(DIM_CH1, HIGH);
+    digitalWrite(DIM_CH2, HIGH);
+    digitalWrite(DIM_CH3, HIGH);
+    digitalWrite(DIM_CH4, HIGH);
+    digitalWrite(DIM_CH5, HIGH);
+    digitalWrite(DIM_CH6, HIGH);
+    digitalWrite(DIM_CH7, HIGH);
+    digitalWrite(DIM_CH8, HIGH);
+
+    delayMicroseconds(DIMMER_DELAY);
+    
+    digitalWrite(DIM_CH1, HIGH);
+    digitalWrite(DIM_CH2, HIGH);
+    digitalWrite(DIM_CH3, HIGH);
+    digitalWrite(DIM_CH4, HIGH);
+    digitalWrite(DIM_CH5, HIGH);
+    digitalWrite(DIM_CH6, HIGH);
+    digitalWrite(DIM_CH7, HIGH);
+    digitalWrite(DIM_CH8, HIGH);
+  }
+  
+}
+
+void zero_crosss_int(){
+  /**
+  void zero_crosss_int()
+
+  Resets clock tick when interrupt triggered by ZC/SYNC pin from dimmer
+  */
+  clock_tick = 0;
 }
 
 void setTargetPos(int panel, float linInch, float pitchDeg, float yawDeg) {
@@ -137,7 +203,7 @@ void setTargetPos(int panel, float linInch, float pitchDeg, float yawDeg) {
   */
   targetPos[1] = origin[panel][0] + linInch * LIN_STEPS_PER_INCH;
   targetPos[2] = origin[panel][1] + pitchDeg * PITCH_STEPS_PER_DEG;
-  targetPos[3] = origin[panel][2] + yawDeg * YAW_STEPS_PER_DEG;
+  targetPos[3] = origin[panel ][2] + yawDeg * YAW_STEPS_PER_DEG;
 }
 
 void calibrate() {
@@ -178,5 +244,6 @@ void calibrate() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+
+  delay(delay_time);
 }

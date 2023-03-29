@@ -13,9 +13,9 @@ int moving = 0;
 
 int pitchSteps, yawSteps, linSteps;
 
-#define STEPS_PER_REV 200*27
-#define PITCH_STEPS_PER_REV 200*27
-#define YAW_STEPS_PER_REV 200*27
+#define STEPS_PER_REV 200
+#define PITCH_STEPS_PER_REV 200*100 //200 steps/rev * 100:1 gearbox
+#define YAW_STEPS_PER_REV 200*27*5 //200 steps/rev * 27:1 gearbox * 5:1 design
 
 //#define STEPS_PER_REV 200
 //#define PITCH_STEPS_PER_REV 10280 //gearbox ratio + 200 steps per rev
@@ -27,9 +27,9 @@ int pitchSteps, yawSteps, linSteps;
 
 // Creates an instance
 //AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
-AccelStepper linActuator(motorInterfaceType, 49, 48);
-AccelStepper yawStepper(motorInterfaceType, 51, 50);
-AccelStepper pitchStepper(motorInterfaceType, 53, 52);
+AccelStepper linActuator(motorInterfaceType, 13, 12);
+AccelStepper yawStepper(motorInterfaceType, 8, 9);
+AccelStepper pitchStepper(motorInterfaceType, 11, 10);
 
 void setup() {
   // set the maximum speed, acceleration factor,
@@ -75,8 +75,8 @@ void loop() {
       
 
       //CHANGE THIS FOR REAL MODEL THIS IS FOR TESTING MOTOR NOT LIN ACT
-      linSteps = params[2] * STEPS_PER_REV / 360;
-      //linSteps = params[2] * 12.7 * STEPS_PER_REV; //2mm pitch = 12.7 revs/in
+      //linSteps = params[2] * STEPS_PER_REV / 360;
+      linSteps = params[2] * 12.7 * STEPS_PER_REV; //2mm pitch = 12.7 revs/in
 
       pitchStepper.moveTo(origin[0] + pitchSteps);
       yawStepper.moveTo(origin[1] + yawSteps);

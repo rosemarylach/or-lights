@@ -1,14 +1,13 @@
 #include <TimerOne.h>
 
 unsigned char channel_1 = 4;  // Output to Opto Triac pin, channel 1
-/*unsigned char channel_2 = 5;  // Output to Opto Triac pin, channel 2
+unsigned char channel_2 = 5;  // Output to Opto Triac pin, channel 2
 unsigned char channel_3 = 6;  // Output to Opto Triac pin, channel 3
 unsigned char channel_4 = 7;  // Output to Opto Triac pin, channel 4
 unsigned char channel_5 = 8;  // Output to Opto Triac pin, channel 5
 unsigned char channel_6 = 9;  // Output to Opto Triac pin, channel 6
 unsigned char channel_7 = 10; // Output to Opto Triac pin, channel 7
 unsigned char channel_8 = 11; // Output to Opto Triac pin, channel 8
-*/
 unsigned char CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8;
 unsigned char CHANNEL_SELECT;
 unsigned char i = 0;
@@ -25,10 +24,10 @@ unsigned char CH[] = {CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8};
 
 void setup() {
 
-  // CH1=CH2=CH3=CH4=CH5=CH6=CH7=CH8=high;
+  //CH1=CH2=CH3=CH4=CH5=CH6=CH7=CH8=high;
 
   pinMode(channel_1, OUTPUT);// Set AC Load pin as output
-  /*
+  
   pinMode(channel_2, OUTPUT);// Set AC Load pin as output
   pinMode(channel_3, OUTPUT);// Set AC Load pin as output
   pinMode(channel_4, OUTPUT);// Set AC Load pin as output
@@ -36,7 +35,7 @@ void setup() {
   pinMode(channel_6, OUTPUT);// Set AC Load pin as output
   pinMode(channel_7, OUTPUT);// Set AC Load pin as output
   pinMode(channel_8, OUTPUT);// Set AC Load pin as output
-  */
+  
   attachInterrupt(digitalPinToInterrupt(3), zero_crosss_int, RISING);
   Timer1.initialize(83); // set a timer of length 100 microseconds for 50Hz or 83 microseconds for 60Hz;
   Timer1.attachInterrupt( timerIsr ); // attach the service routine here
@@ -47,12 +46,14 @@ void timerIsr()
 {
   clock_tick++;
 
-  if (CH1 == clock_tick)
-  {
+  if (CH1 == clock_tick) {
     digitalWrite(channel_1, HIGH); // triac firing
     delayMicroseconds(8.33); // triac On propogation delay (for 60Hz use 8.33)
     digitalWrite(channel_1, LOW); // triac Off
   }
+
+  
+
 /*
   if (CH2 == clock_tick)
   {
