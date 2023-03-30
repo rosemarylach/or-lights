@@ -14,8 +14,8 @@ int moving = 0;
 int pitchSteps, yawSteps, linSteps;
 
 #define STEPS_PER_REV 200
-#define PITCH_STEPS_PER_REV 200*100 //200 steps/rev * 100:1 gearbox
-#define YAW_STEPS_PER_REV 200*27*5 //200 steps/rev * 27:1 gearbox * 5:1 design
+#define PITCH_STEPS_PER_REV 200*99.05 //200 steps/rev * 100:1 gearbox
+#define YAW_STEPS_PER_REV 200*19.19*30/12 //200 steps/rev * 27:1 gearbox * 5:1 design
 
 //#define STEPS_PER_REV 200
 //#define PITCH_STEPS_PER_REV 10280 //gearbox ratio + 200 steps per rev

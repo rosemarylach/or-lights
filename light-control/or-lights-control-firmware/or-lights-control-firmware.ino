@@ -4,8 +4,8 @@
 
 //PARAMETERS
 #define LIN_STEPS_PER_INCH 200 * 12.7        //200 steps/rev * 12.7rev/inch (2mm pitch)
-#define YAW_STEPS_PER_DEG 200 * 17 / 360     //200 steps/rev * 17:1 gearbox
-#define PITCH_STEPS_PER_DEG 200 * 100 / 360  //200 steps/rev * 100:1 gearbox
+#define YAW_STEPS_PER_DEG 200 * 19.19 * 30 / (12*360)     //200 steps/rev * 19.19:1 gearbox * 30:12 gear ratio
+#define PITCH_STEPS_PER_DEG 200 * 99.05 / 360  //200 steps/rev * 99.05:1 gearbox
 
 //PIN CONFIGURATION
 #define P1_LIN_STEP 13
@@ -87,6 +87,8 @@ MultiStepper panels[4] = {MultiStepper(), MultiStepper(), MultiStepper(), MultiS
 long origin[4][3];
 long targetPos[3];
 
+int moving;
+
 /**
 AccelStepper P1Lin(motorInterfaceType, P1_LIN_STEP, P1_LIN_DIR);
 AccelStepper P1Pitch(motorInterfaceType, P1_PITCH_STEP, P1_PITCH_DIR);
@@ -135,10 +137,20 @@ void setup() {
   pinMode(DIM_CH7, OUTPUT);
   pinMode(DIM_CH8, OUTPUT);
 
-  attachInterrupt(digitalPinToINterrupt(2), zero_crosss_int, RISING);
+  attachInterrupt(digitalPinToInterrupt(2), zero_crosss_int, RISING);
 
   Timer1.initialize(83);
   Timer1.attachInterrupt(timerIsr);
+
+  //Initialize fan output pins and turn fans on
+  pinMode(FAN1_PWM, OUTPUT);
+  pinMode(FAN2_PWM, OUTPUT);
+  pinMode(FAN3_PWM, OUTPUT);
+  
+  //Replace with analogWrite() for PWM control of fan speed in future versions
+  digitalWrite(FAN1_PWM, HIGH);
+  digitalWrite(FAN2_PWM, HIGH);
+  digitalWrite(FAN3_PWM, HIGH);
 
 }
 
@@ -201,9 +213,9 @@ void setTargetPos(int panel, float linInch, float pitchDeg, float yawDeg) {
     none
     updates variable targetPos[3] - array of long integers representing the target position in steps for each motor on the panel to move to ({linSteps, pitchSteps, yawSteps})
   */
-  targetPos[1] = origin[panel][0] + linInch * LIN_STEPS_PER_INCH;
+  targetPos[3] = origin[panel][0] + linInch * LIN_STEPS_PER_INCH;
   targetPos[2] = origin[panel][1] + pitchDeg * PITCH_STEPS_PER_DEG;
-  targetPos[3] = origin[panel ][2] + yawDeg * YAW_STEPS_PER_DEG;
+  targetPos[1] = origin[panel][2] + yawDeg * YAW_STEPS_PER_DEG;
 }
 
 void calibrate() {
@@ -212,7 +224,6 @@ void calibrate() {
 
   Calibrates the entire assembly by individually driving each panel to its hard limits, then to the define zero position
   */
-
 
   //Individually drive panel to hard limits and set zero position
   for (int i = 0; i < 4; i++) {
@@ -243,7 +254,59 @@ void calibrate() {
   }
 }
 
+int scaleBrightness(int target) {
+  /*
+  int scaleBrightness(int target)
+
+  Scales a target brightness in percent (0-100%) from the user to the corresponding percent for the active brightness range on the panel bulbs
+
+  inputs:
+    target - integer from 0-100, user-input target brightness percent
+
+  outputs:
+    tickDimVal - integer from 0-100 corresponding to the tick timer at which the digital dimmer outputs should be pulsed (100 - scaled brightness %)
+  */
+
+
+}
+
 void loop() {
+  //dimVal = scaleBrightness()
+  for (int i = 0; i < 4; i++) { 
+
+    //Move panels to hard limits regardless of current position by instructing them to cover full range of motion
+    setTargetPos(i, 0.3, 0, 0);
+    panels[i].moveTo(targetPos);
+  }
+
+  //Run all 4 panels to their zero positions simultaneously
+  moving = 1;
+  while(moving) {
+    panels[0].run();
+    panels[1].run();
+    panels[2].run();
+    panels[3].run();
+    if (!panels[0].run() && !panels[1].run() && !panels[2].run() && !panels[3].run()){
+      moving = 0;
+    } 
+  }
+
+    for (int i = 0; i < 4; i++) { 
+
+    //Move panels to hard limits regardless of current position by instructing them to cover full range of motion
+    setTargetPos(i, 0, 0, 0);
+    panels[i].moveTo(targetPos);
+  }
+  moving = 1;
+  while(moving) {
+    panels[0].run();
+    panels[1].run();
+    panels[2].run();
+    panels[3].run();
+    if (!panels[0].run() && !panels[1].run() && !panels[2].run() && !panels[3].run()){
+      moving = 0;
+    } 
+  }
 
   delay(delay_time);
 }
