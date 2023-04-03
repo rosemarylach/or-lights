@@ -17,6 +17,15 @@ int pitchSteps, yawSteps, linSteps;
 #define PITCH_STEPS_PER_REV 200*99.05 //200 steps/rev * 100:1 gearbox
 #define YAW_STEPS_PER_REV 200*19.19*30/12 //200 steps/rev * 27:1 gearbox * 5:1 design
 
+
+
+int pins[4][3][2] = {{{13,12},{8,9},{11,10}},
+                    {{14,15},{22,23},{17,16}},
+                    {{55,54},{26,24},{30,28}},
+                    {{53,52},{58,57},{66,65}}
+                    };
+
+
 //#define STEPS_PER_REV 200
 //#define PITCH_STEPS_PER_REV 10280 //gearbox ratio + 200 steps per rev
 //#define YAW_STEPS_PER_REV 51400 //50:10 design ratio + gearbox ratio + 200 steps per rev
@@ -27,9 +36,12 @@ int pitchSteps, yawSteps, linSteps;
 
 // Creates an instance
 //AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
-AccelStepper linActuator(motorInterfaceType, 13, 12);
-AccelStepper yawStepper(motorInterfaceType, 8, 9);
-AccelStepper pitchStepper(motorInterfaceType, 11, 10);
+
+#define PANEL 1
+
+AccelStepper linActuator(motorInterfaceType, pins[PANEL-1][0][0], pins[PANEL-1][0][1]);
+AccelStepper yawStepper(motorInterfaceType, pins[PANEL-1][1][0], pins[PANEL-1][1][1]);
+AccelStepper pitchStepper(motorInterfaceType, pins[PANEL-1][2][0], pins[PANEL-1][2][1]);
 
 void setup() {
   // set the maximum speed, acceleration factor,

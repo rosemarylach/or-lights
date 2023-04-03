@@ -7,8 +7,8 @@ unsigned char channel_3 = 36;
 unsigned char channel_4 = 38;
 unsigned char channel_5 = 40; //channel 1 output on pin D4
 unsigned char channel_6 = 42;
-unsigned char channel_7 = 44;
-unsigned char channel_8 = 46;
+unsigned char channel_7 = 48;
+unsigned char channel_8 = 50;
 unsigned char CH1, CH2, CH3, CH4, CH5, CH6, CH7, CH8;
 unsigned char clock_tick;
 unsigned int delay_time = 50;

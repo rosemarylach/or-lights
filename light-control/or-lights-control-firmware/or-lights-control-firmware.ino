@@ -1,6 +1,7 @@
 #include <AccelStepper.h>
 #include <MultiStepper.h>
 #include <TimerOne.h>
+#include <SoftwareSerial.h>
 
 //PARAMETERS
 #define LIN_STEPS_PER_INCH 200 * 12.7        //200 steps/rev * 12.7rev/inch (2mm pitch)
@@ -56,8 +57,17 @@
 
 //OTHER
 #define motorInterfaceType 1
-#define USE_SERIAL Serial
+#define ESP8266 Serial1 //for WiFi
 #define DIMMER_DELAY 8.33 //8.33ms delay for 60Hz waveform
+
+//UART PIN INITIALIZATION
+const byte rxPin = 2; // Wire this to Tx Pin of ESP8266
+const byte txPin = 3; // Wire this to Rx Pin of ESP8266
+
+//WIFI VARIABLE INITIALIZATION
+float userTargets[4][3];
+int brightnessIndex = 0;
+int calibrate = 0;
 
 //DIMMER VARIABLE INITIALIZATION
 unsigned char dimVal;
@@ -152,7 +162,30 @@ void setup() {
   digitalWrite(FAN2_PWM, HIGH);
   digitalWrite(FAN3_PWM, HIGH);
 
+  Serial.begin(9600);
+  ESP8266.begin(9600); 
+  
+  Serial.println("Setup complete.");
+  reconnect();
+
 }
+
+
+void reconnect() {
+  String conn_response = "";
+  while (conn_response.indexOf("CONNECT") == -1)
+  {
+    ESP8266.println("AT+CIPSTART=\"TCP\",\"168.4.178.23\",50000");
+    delay(2000);
+    if (ESP8266.available() > 0)
+    {
+      conn_response = ESP8266.readStringUntil('\n');
+    }
+    Serial.println("[ " + conn_response + " ]");
+  }
+  Serial.println("CONNECTED");  
+}
+
 
 void timerIsr(){
   /**
@@ -197,6 +230,8 @@ void zero_crosss_int(){
   clock_tick = 0;
 }
 
+
+
 void setTargetPos(int panel, float linInch, float pitchDeg, float yawDeg) {
   /**
   void setTargetPos(int panel, float linInch, float pitchDeg, float yawDeg)
@@ -218,9 +253,9 @@ void setTargetPos(int panel, float linInch, float pitchDeg, float yawDeg) {
   targetPos[1] = origin[panel][2] + yawDeg * YAW_STEPS_PER_DEG;
 }
 
-void calibrate() {
+void calibratePanels() {
   /**
-  void calibrate()
+  void calibratePanels()
 
   Calibrates the entire assembly by individually driving each panel to its hard limits, then to the define zero position
   */
@@ -229,7 +264,7 @@ void calibrate() {
   for (int i = 0; i < 4; i++) {
 
     //Move panels to hard limits regardless of current position by instructing them to cover full range of motion
-    setTargetPos(i, -1.5, 80, 200);
+    setTargetPos(i, -1.5, 100, 200);
     panels[i].moveTo(targetPos);
     panels[i].runSpeedToPosition();
     
@@ -254,30 +289,41 @@ void calibrate() {
   }
 }
 
-int scaleBrightness(int target) {
+int scaleBrightness(int targetIndex) {
   /*
-  int scaleBrightness(int target)
+  int scaleBrightness(int targetIndex)
 
   Scales a target brightness in percent (0-100%) from the user to the corresponding percent for the active brightness range on the panel bulbs
 
   inputs:
-    target - integer from 0-100, user-input target brightness percent
+    target - integer from 0-5 corresponding to user-input target brightness percent:
+              0 -> 0%
+              1 -> 20%
+              2 -> 40%
+              3 -> 60%
+              4 -> 80%
+              5 -> 100%
 
   outputs:
     tickDimVal - integer from 0-100 corresponding to the tick timer at which the digital dimmer outputs should be pulsed (100 - scaled brightness %)
   */
 
+  int realBrightnessVals[] = {1, 37, 45, 55, 65, 75}; //experimentally determined tick values corresponding to target brightness percent
+
+  return 100 - realBrightnessVals[targetIndex];
 
 }
 
 void loop() {
+  /**
   //dimVal = scaleBrightness()
   for (int i = 0; i < 4; i++) { 
 
     //Move panels to hard limits regardless of current position by instructing them to cover full range of motion
-    setTargetPos(i, 0.3, 0, 0);
+    setTargetPos(i, 0.1, 20, 20);
     panels[i].moveTo(targetPos);
   }
+
 
   //Run all 4 panels to their zero positions simultaneously
   moving = 1;
@@ -307,6 +353,103 @@ void loop() {
       moving = 0;
     } 
   }
+  */
+  int responseCounter = 0;
+  
+  if (ESP8266.available() > 0)
+  {
+    while (ESP8266.available() > 0)
+    {
+      if (responseCounter == 0)
+      {
+      
+        String response = ESP8266.readStringUntil('\n');
+
+        Serial.println(response);
+
+        /*
+         * [[panel1_f, panel1_p, panel1_y]
+         *  [panel2_f, panel2_p, panel2_y]
+         *  [panel3_f, panel3_p, panel3_y]
+         *  [panel4_f, panel4_p, panel4_y]]
+          */
+
+        if (response.indexOf("+IPD") > -1)
+        {
+          int b_idx = response.indexOf('b');
+          brightnessIndex = response.substring(b_idx+2).toInt();
+
+          int start_idx;
+          int end_idx = b_idx;
+
+
+          // for each panel
+          for (int p=3; p>=0; p--) {
+            // for each userTargets point
+            for (int d=2; d>=0; d--) {
+              String start = (d==0) ? "f" : (d==1) ? "p" : "y";
+              start = start + String(p+1);
+
+              start_idx = response.indexOf(start);
+              userTargets[p][d] = response.substring(start_idx+3, end_idx).toFloat();
+
+              end_idx = start_idx;
+              
+            }
+          }
+          if (calibrate) {
+            calibratePanels();
+            calibrate = 0;
+          }
+
+          else {
+            //set individual target positions for each motor
+            for (int i = 0; i<4; i++) {
+              setTargetPos(i, userTargets[i][0], -userTargets[i][1], userTargets[i][2]); //invert pitchDeg because of sign convention in app script
+              panels[i].moveTo(targetPos);
+            }
+            
+            //raise flag for active motion
+            moving = 1;
+            
+            //move panels until all target positions are reached
+            while(moving) {
+              panels[0].run(); panels[1].run(); panels[2].run(); panels[3].run();
+              
+              //lower flag for active motion once target positions reached
+              if (!panels[0].run() && !panels[1].run() && !panels[2].run() && !panels[3].run()){
+                moving = 0;
+              }
+            }
+
+          //set brightness target
+          dimVal = scaleBrightness(brightnessIndex);
+          }
+          
+          // just printy for testing purposes - separate to comment out
+          Serial.println("focus\tpitch\tyaw\t");
+          for (int p=0; p<4; p++) {
+            // for each userTargets point
+            for (int d=0; d<=2; d++) {
+              Serial.print(userTargets[p][d]);
+              Serial.print("\t");
+            }
+            Serial.println();
+          }
+          
+        }
+      }
+    }
+    /*
+    Serial.println();
+    Serial.println("============");
+    Serial.println();
+    */
+  }
+  //for interface w rosemary's wifi stuff -- assuming float userTargets 4x3 array of target vals and int 0-5 brightnessIndex
+  
+  
+
 
   delay(delay_time);
 }
