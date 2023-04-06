@@ -314,6 +314,28 @@ int scaleBrightness(int targetIndex) {
 
 }
 
+void moveAllMotors(float[4][3] targetVals) {
+  
+  //set target position for each panel
+  for (int i = 0; i<4; i++) {
+    setTargetPos(i, targetVals[i][0], -targetVals[i][1], targetVals[i][2]); //invert pitchDeg because of sign convention in app script
+      panels[i].moveTo(targetPos);
+  }
+    
+  //raise flag for active motion
+  moving = 1;
+  
+  //move panels until all target positions are reached
+  while(moving) {
+    panels[0].run(); panels[1].run(); panels[2].run(); panels[3].run();
+    
+    //lower flag for active motion once target positions reached
+    if (!panels[0].run() && !panels[1].run() && !panels[2].run() && !panels[3].run()){
+      moving = 0;
+    }
+  } 
+}
+
 void loop() {
   /**
   //dimVal = scaleBrightness()
@@ -392,7 +414,7 @@ void loop() {
 
               start_idx = response.indexOf(start);
               userTargets[p][d] = response.substring(start_idx+3, end_idx).toFloat();
-
+  
               end_idx = start_idx;
               
             }
@@ -403,6 +425,9 @@ void loop() {
           }
 
           else {
+
+            moveAllPanels(userTargets);
+            /*
             //set individual target positions for each motor
             for (int i = 0; i<4; i++) {
               setTargetPos(i, userTargets[i][0], -userTargets[i][1], userTargets[i][2]); //invert pitchDeg because of sign convention in app script
@@ -421,6 +446,7 @@ void loop() {
                 moving = 0;
               }
             }
+            */
 
           //set brightness target
           dimVal = scaleBrightness(brightnessIndex);
