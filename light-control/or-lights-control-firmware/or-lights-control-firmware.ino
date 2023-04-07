@@ -175,7 +175,7 @@ void reconnect() {
   String conn_response = "";
   while (conn_response.indexOf("CONNECT") == -1)
   {
-    ESP8266.println("AT+CIPSTART=\"TCP\",\"168.4.178.23\",50000");
+    ESP8266.println("AT+CIPSTART=\"TCP\",\"168.5.94.42\",50000");
     delay(2000);
     if (ESP8266.available() > 0)
     {
@@ -314,7 +314,7 @@ int scaleBrightness(int targetIndex) {
 
 }
 
-void moveAllMotors(float[4][3] targetVals) {
+void moveAllMotors(float targetVals[4][3]) {
   
   //set target position for each panel
   for (int i = 0; i<4; i++) {
@@ -420,13 +420,13 @@ void loop() {
             }
           }
           if (calibrate) {
-            calibratePanels();
+            //calibratePanels();
             calibrate = 0;
           }
 
           else {
 
-            moveAllPanels(userTargets);
+            moveAllMotors(userTargets);
             /*
             //set individual target positions for each motor
             for (int i = 0; i<4; i++) {
