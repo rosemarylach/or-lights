@@ -65,7 +65,7 @@ const byte rxPin = 2; // Wire this to Tx Pin of ESP8266
 const byte txPin = 3; // Wire this to Rx Pin of ESP8266
 
 //WIFI VARIABLE INITIALIZATION
-float userTargets[4][3];
+float userTargets[4][3] = {{0,0,0},{0,0,0},{0,0,0},{0,0,0}};
 int brightnessIndex = 0;
 int calibrate = 0;
 
@@ -419,11 +419,11 @@ void loop() {
               start = start + String(p+1);
 
               start_idx = response.indexOf(start);
-              parsedFloatString = response.substring(start_idx+3, end_idx)
+              parsedFloatString = response.substring(start_idx+3, end_idx);
               parsedFloat = parsedFloatString.toFloat();
               
               if (parsedFloat == 0) {
-                if parsedFloatString.indexOf("0.00" < 0) {
+                if (parsedFloatString.indexOf("0.00" < 0)) {
                   parsedFloat = userTargets[p][d];
                 } 
               }
@@ -433,7 +433,7 @@ void loop() {
               if (d==1) {
                 parsedFloat = (parsedFloat < 0) ? max(parsedFloat, -50) : min(parsedFloat, 50);
               }
-              userTargets[p][d] = .toFloat();
+              userTargets[p][d] = parsedFloat;
   
               end_idx = start_idx;
               
