@@ -4,7 +4,7 @@
 #include <SoftwareSerial.h>
 
 //PARAMETERS
-#define LIN_STEPS_PER_INCH 200 * 12.7        //200 steps/rev * 12.7rev/inch (2mm pitch)
+#define LIN_STEPS_PER_INCH 200 * 12.7 / 5       //200 steps/rev * 12.7 rev/in (2mm pitch) / 5 pitch/rev 
 #define YAW_STEPS_PER_DEG 200 * 19.19 * 30 / (12*360)     //200 steps/rev * 19.19:1 gearbox * 30:12 gear ratio
 #define PITCH_STEPS_PER_DEG 200 * 99.05 / 360  //200 steps/rev * 99.05:1 gearbox
 
@@ -96,6 +96,8 @@ MultiStepper panels[4] = {MultiStepper(), MultiStepper(), MultiStepper(), MultiS
 
 long origin[4][3];
 long targetPos[3];
+
+float zeroPos[4][3] = {{0,0,0}, {0,0,0}, {0,0,0}, {0,0,0}};
 
 int moving;
 
@@ -396,6 +398,7 @@ void loop() {
          *  [panel4_f, panel4_p, panel4_y]]
           */
 
+        
         if (response.indexOf("+IPD") > -1)
         {
           int b_idx = response.indexOf('b');
@@ -404,6 +407,9 @@ void loop() {
           int start_idx;
           int end_idx = b_idx;
 
+          String parsedFloatString;
+          float parsedFloat;
+          
 
           // for each panel
           for (int p=3; p>=0; p--) {
@@ -413,7 +419,21 @@ void loop() {
               start = start + String(p+1);
 
               start_idx = response.indexOf(start);
-              userTargets[p][d] = response.substring(start_idx+3, end_idx).toFloat();
+              parsedFloatString = response.substring(start_idx+3, end_idx)
+              parsedFloat = parsedFloatString.toFloat();
+              
+              if (parsedFloat == 0) {
+                if parsedFloatString.indexOf("0.00" < 0) {
+                  parsedFloat = userTargets[p][d];
+                } 
+              }
+              if (d==0) {
+                parsedFloat = min(parsedFloat, 1.25);
+              }
+              if (d==1) {
+                parsedFloat = (parsedFloat < 0) ? max(parsedFloat, -50) : min(parsedFloat, 50);
+              }
+              userTargets[p][d] = .toFloat();
   
               end_idx = start_idx;
               
@@ -425,7 +445,10 @@ void loop() {
           }
 
           else {
-
+            //set brightness to target
+            dimVal = scaleBrightness(brightnessIndex);
+            
+            //move motors to recieved target position
             moveAllMotors(userTargets);
             /*
             //set individual target positions for each motor
@@ -449,7 +472,7 @@ void loop() {
             */
 
           //set brightness target
-          dimVal = scaleBrightness(brightnessIndex);
+        
           }
           
           // just printy for testing purposes - separate to comment out
@@ -464,6 +487,12 @@ void loop() {
           }
           
         }
+        /*
+        else if (response.indexOf("CLOSED") > -1) {
+          moveAllMotors(zeroPos);
+          reconnect();
+        }
+        */
       }
     }
     /*

@@ -37,7 +37,7 @@ int pins[4][3][2] = {{{13,12},{8,9},{11,10}},
 // Creates an instance
 //AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
 
-#define PANEL 1
+#define PANEL 2
 
 AccelStepper linActuator(motorInterfaceType, pins[PANEL-1][0][0], pins[PANEL-1][0][1]);
 AccelStepper yawStepper(motorInterfaceType, pins[PANEL-1][1][0], pins[PANEL-1][1][1]);
@@ -88,7 +88,7 @@ void loop() {
 
       //CHANGE THIS FOR REAL MODEL THIS IS FOR TESTING MOTOR NOT LIN ACT
       //linSteps = params[2] * STEPS_PER_REV / 360;
-      linSteps = params[2] * 12.7 * STEPS_PER_REV; //2mm pitch = 12.7 revs/in
+      linSteps = params[2] * 12.7/5 * STEPS_PER_REV; //2mm pitch * 5 pitch steps / rev = 10mm/rev = 12.7/5 rev/in
       //linSteps = params[2] / 0.000395;
 
 

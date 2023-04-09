@@ -3,7 +3,7 @@
 
 
 //PARAMETERS
-#define LIN_STEPS_PER_INCH 200 * 12.7        //200 steps/rev * 12.7rev/inch (2mm pitch)
+#define LIN_STEPS_PER_INCH 200 * 12.7 / 5       //200 steps/rev * 12.7 rev/in (2mm pitch) / 5 pitch/rev
 #define YAW_STEPS_PER_DEG 200 * 19.19 * 30 / (12*360)     //200 steps/rev * 19.19:1 gearbox * 30:12 gear ratio
 #define PITCH_STEPS_PER_DEG 200 * 99.05 / 360  //200 steps/rev * 99.05:1 gearbox
 
@@ -48,7 +48,7 @@
 #define FOCUS_LIM -1.5
 */
 #define YAW_LIM 200
-#define FOCUS_LIM -0.1
+#define FOCUS_LIM -1.3
 
 
 //ACCELSTEPPER INSTANTIATION -- myStepper(motorInterfaceType, stepPin, dirPin);
@@ -130,7 +130,7 @@ void setup() {
   }
 
 
-  float pitchCalPos[4][3] = {{0, 0, 90}, {0, 0, 90}, {0, 0, 90}, {0, 0, 90}};
+  float pitchCalPos[4][3] = {{0, 0, -90}, {0, 0, 90}, {0, 0, 90}, {0, 0, -90}};
   moveAllMotors(pitchCalPos);
 
 
@@ -261,7 +261,7 @@ void calibratePitch(int panel) {
       }
       else if (response == 0) {
         origin[panel][1] = drivers[panel][1].currentPosition();
-        drivers[panel][1].moveTo(origin[panel][1] - 55 * PITCH_STEPS_PER_DEG);
+        drivers[panel][1].moveTo(origin[panel][1] - 50 * PITCH_STEPS_PER_DEG);
         drivers[panel][1].runToPosition();
         origin[panel][1] = drivers[panel][1].currentPosition();
         Serial.print("Calibration complete for panel ");
