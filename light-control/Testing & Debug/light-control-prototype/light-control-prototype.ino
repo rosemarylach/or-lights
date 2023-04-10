@@ -37,7 +37,7 @@ int pins[4][3][2] = {{{13,12},{8,9},{11,10}},
 // Creates an instance
 //AccelStepper myStepper(motorInterfaceType, stepPin, dirPin);
 
-#define PANEL 2
+#define PANEL 4
 
 AccelStepper linActuator(motorInterfaceType, pins[PANEL-1][0][0], pins[PANEL-1][0][1]);
 AccelStepper yawStepper(motorInterfaceType, pins[PANEL-1][1][0], pins[PANEL-1][1][1]);
