@@ -347,7 +347,7 @@ void moveToZero() {
       moving = 0;
     }
   }
-  brightnessIndex = 0;
+  dimVal = scaleBrightness(0);
 }
 
 void moveAllMotors(float targetVals[4][3]) {
@@ -469,6 +469,7 @@ void loop() {
               }
               if (d == 0) {
                 parsedFloat = min(parsedFloat, 1.25);
+                parsedFloat = max(parsedFloat, 0);
               }
               if (d == 1) {
                 parsedFloat = (parsedFloat < 0) ? max(parsedFloat, -50) : min(parsedFloat, 50);
@@ -477,7 +478,7 @@ void loop() {
 
               end_idx = start_idx;
             }
-          }
+          } 
 
           if (calibrate) {
             //calibratePanels();
