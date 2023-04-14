@@ -185,7 +185,7 @@ void setup() {
 void reconnect() {
   String conn_response = "";
   while (conn_response.indexOf("CONN") == -1) {
-    ESP8266.println("AT+CIPSTART=\"TCP\",\"168.5.182.167\",50000");
+    ESP8266.println("AT+CIPSTART=\"TCP\",\"192.168.121.102\",50000");
     delay(2000);
     if (ESP8266.available() > 0) {
       conn_response = ESP8266.readStringUntil('\n');
