@@ -183,9 +183,12 @@ void setup() {
 
 
 void reconnect() {
+  /*
+  Establishes WiFi connection with ZoilDef app via ESP8266 
+  */
   String conn_response = "";
   while (conn_response.indexOf("CONN") == -1) {
-    ESP8266.println("AT+CIPSTART=\"TCP\",\"192.168.121.102\",50000");
+    ESP8266.println("AT+CIPSTART=\"TCP\",\"192.168.171.102\",50000"); //change IP based on IP of ZoilDef app device
     delay(2000);
     if (ESP8266.available() > 0) {
       conn_response = ESP8266.readStringUntil('\n');
@@ -372,53 +375,17 @@ void moveAllMotors(float targetVals[4][3]) {
 }
 
 void loop() {
-  /**
-  //dimVal = scaleBrightness()
-  for (int i = 0; i < 4; i++) { 
 
-    //Move panels to hard limits regardless of current position by instructing them to cover full range of motion
-    setTargetPos(i, 0.1, 20, 20);
-    panels[i].moveTo(targetPos);
-  }
-
-
-  //Run all 4 panels to their zero positions simultaneously
-  moving = 1;
-  while(moving) {
-    panels[0].run();
-    panels[1].run();
-    panels[2].run();
-    panels[3].run();
-    if (!panels[0].run() && !panels[1].run() && !panels[2].run() && !panels[3].run()){
-      moving = 0;
-    } 
-  }
-
-    for (int i = 0; i < 4; i++) { 
-
-    //Move panels to hard limits regardless of current position by instructing them to cover full range of motion
-    setTargetPos(i, 0, 0, 0);
-    panels[i].moveTo(targetPos);
-  }
-  moving = 1;
-  while(moving) {
-    panels[0].run();
-    panels[1].run();
-    panels[2].run();
-    panels[3].run();
-    if (!panels[0].run() && !panels[1].run() && !panels[2].run() && !panels[3].run()){
-      moving = 0;
-    } 
-  }
-  */
   int responseCounter = 0;
 
-  if (millis() - time_recieved > 10000) {
-    moveToZero();
+  //Reset system when disconnected from app
+  if (millis() - time_recieved > 10000) { //Begin reset after 10s of no recieved signal
+    moveToZero(); //return panels to origin to avoid recalibration on restart
     Serial.println("Reconnecting...");
     reconnect();
   }
 
+  //Recieve and process wireless signals from ZoilDef app
   if (ESP8266.available() > 0) {
     while (ESP8266.available() > 0) {
 
@@ -430,16 +397,11 @@ void loop() {
         Serial.println("Response:");
         Serial.println(response);
 
-        /*
-         * [[panel1_f, panel1_p, panel1_y]
-         *  [panel2_f, panel2_p, panel2_y]
-         *  [panel3_f, panel3_p, panel3_y]
-         *  [panel4_f, panel4_p, panel4_y]]
-          */
-
+        //Parse target position string transmitted by ZoilDef app
         if (response.indexOf("+IPD") > -1) {
           time_recieved = millis();
 
+          //Extract brightness from transmitted string
           int b_idx = response.indexOf('b');
           brightnessIndex = (b_idx < 0) ? brightnessIndex : response.substring(b_idx + 2).toInt();
 
@@ -450,9 +412,11 @@ void loop() {
           float parsedFloat;
 
 
-          // for each panel
+          //extract all panel positions
+          
+          //for each panel
           for (int p = 3; p >= 0; p--) {
-            // for each userTargets point
+            // for each motor target position
             for (int d = 2; d >= 0; d--) {
               String start = (d == 0) ? "f" : (d == 1) ? "p"
                                                        : "y";
@@ -461,16 +425,22 @@ void loop() {
               start_idx = response.indexOf(start);
               parsedFloatString = response.substring(start_idx + 3, end_idx);
               parsedFloat = parsedFloatString.toFloat();
+              
+              //remain at current position if target position is not a number (due to bit error in transmission)
               if (parsedFloat == 0) {
                 if (parsedFloatString.indexOf("0.00") < 0) {
                   parsedFloat = userTargets[p][d];
                   
                 }
               }
+
+              //software limit focus position between (0in, 1.25in)
               if (d == 0) {
                 parsedFloat = min(parsedFloat, 1.25);
                 parsedFloat = max(parsedFloat, 0);
               }
+              
+              //software limit pitch position between (-50deg, +50deg)
               if (d == 1) {
                 parsedFloat = (parsedFloat < 0) ? max(parsedFloat, -50) : min(parsedFloat, 50);
               }
@@ -480,39 +450,20 @@ void loop() {
             }
           } 
 
+
+          //unused loop for automatic calibration procedure
           if (calibrate) {
             //calibratePanels();
             calibrate = 0;
           }
 
+          //actuation of motors based on parsed target positions
           else {
             //set brightness to target
             dimVal = scaleBrightness(brightnessIndex);
 
             //move motors to recieved target position
             moveAllMotors(userTargets);
-            /*
-            //set individual target positions for each motor
-            for (int i = 0; i<4; i++) {
-              setTargetPos(i, userTargets[i][0], -userTargets[i][1], userTargets[i][2]); //invert pitchDeg because of sign convention in app script
-              panels[i].moveTo(targetPos);
-            }
-            
-            //raise flag for active motion
-            moving = 1;
-            
-            //move panels until all target positions are reached
-            while(moving) {
-              panels[0].run(); panels[1].run(); panels[2].run(); panels[3].run();
-              
-              //lower flag for active motion once target positions reached
-              if (!panels[0].run() && !panels[1].run() && !panels[2].run() && !panels[3].run()){
-                moving = 0;
-              }
-            }
-            */
-
-            //set brightness target
           }
 
           // just printy for testing purposes - separate to comment out
@@ -527,26 +478,12 @@ void loop() {
           }
         }
 
-        /*else if (response.indexOf("CL") > -1) {
-          //stupid(zeroPos);
-          //moveAllMotors(zeroPos);
-          moveToZero();
-          Serial.println("Reconnecting...");
-          reconnect();
-        }
-        */
+        
       }
     }
-    /*
-    Serial.println();
-    Serial.println("============");
-    Serial.println();
-    */
+   
   }
-  //for interface w rosemary's wifi stuff -- assuming float userTargets 4x3 array of target vals and int 0-5 brightnessIndex
 
 
-
-
-  delay(delay_time);
+  delay(delay_time); //delay for dimming adjustment stuff
 }

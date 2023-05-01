@@ -101,7 +101,11 @@ void setup() {
       origin[i][j] = drivers[i][j].currentPosition();
     }
   }
+
+  //begin one-time manual calibration procedure on user serial input
   Serial.println("Enter '1' when ready to begin automatic focus and yaw calibration:");
+  
+  //wait for user to input "1"
   while(1){
     if (Serial.available()) {
       if (Serial.parseInt() == 1){
@@ -117,35 +121,34 @@ void setup() {
   }
   Serial.println("Calibrating focus and yaw.");
 
-
+  //automatically calibrate focus and yaw using hard limits
   calibrateYawFocus();
 
-
   Serial.println("Focus and yaw calibrated.");
-  delay(2000);
+  delay(2000); //pause for dramatic effect
+
   Serial.println("Moving yaw 90 degrees for manual pitch calibration.");
- 
+  
+  //clear serial input
   while(Serial.available()){
     Serial.read();
   }
 
-
+  //move yaw to avoid unintended contact while calibrating pitch
   float pitchCalPos[4][3] = {{0, 0, -90}, {0, 0, 90}, {0, 0, 90}, {0, 0, -90}};
   moveAllMotors(pitchCalPos);
 
-
+  //manually calibrate pitch for each panel individually
   for (int i; i<4; i++){
     calibratePitch(i);
   }
 
 
-
-
   Serial.println("\n-----------------------------------------------------\n\nCALIBRATION COMPLETE");
-
+  
+  //return to origin at end of calibration so or-lights-control-firmware can accurately measure zero position on startup
   float zeroPos[4][3] = {{0, 0, 0},{0, 0, 0},{0, 0, 0},{0, 0, 0}};
   moveAllMotors(zeroPos);
-
 
 }
 
@@ -184,10 +187,6 @@ void calibrateYawFocus() {
 
   Calibrates the entire assembly by individually driving each panel to its hard limits, then to the define zero position
   */
-
-
-  //Individually drive panel to hard limits and set zero position
-
 
   float limitPos[4][3] = {{FOCUS_LIM, 0, YAW_LIM}, {FOCUS_LIM, 0, YAW_LIM}, {FOCUS_LIM, 0, YAW_LIM}, {FOCUS_LIM, 0, YAW_LIM}}; //target position for panels to hit yaw and focus hard limits
   float calZeroPos[4][3] = {{0, 0, -100}, {0, 0, -100}, {0, 0, -100}, {0, 0, -100}}; //target position for panels to move to calibrated yaw/focus zero position
@@ -240,38 +239,61 @@ void moveAllMotors(float targetVals[4][3]) {
 
 
 void calibratePitch(int panel) {
+  /*
+  void calibratePitch(int panel)
+
+  Runs manual calibration of a single panel by using serial input to command small angle movements 
+  
+  inputs:
+    - panel: integer for panel number to be calibrated
+  */
+
+  //initialize variables for automatic pitch calibration
   int calibrated = 0;
   int pitchPos = 0;
   int response;
+
+  //formatting for user input on manual calibration
   Serial.print("\n-----------------------------------------------------\nMANUAL CALIBRATION OF PANEL ");
   Serial.println(panel+1);
   Serial.println("\nEnter '1' to move 10deg. Enter 0 to finish calibration.");
+  
+  //loop through calibration procedure until calibration is complete
   while(!calibrated) {
+    
+    //read serial input from user
     if (Serial.available()) {
       response = Serial.parseInt();
       while (Serial.available()) {
         Serial.read();
       }
       Serial.println(response);
+      
+      //move pitch +10 degrees if commanded
       if (response == 1) {
         pitchPos += 10;
+
         drivers[panel][1].move(10 * PITCH_STEPS_PER_DEG);
         drivers[panel][1].runToPosition();
+        
         Serial.println("Enter '1' to move 10deg. Enter 0 to finish calibration.");
       }
+
+      //return pitch to zero by moving -50 degrees if commanded that hard limit is hit
       else if (response == 0) {
-        origin[panel][1] = drivers[panel][1].currentPosition();
-        drivers[panel][1].moveTo(origin[panel][1] - 50 * PITCH_STEPS_PER_DEG);
+        origin[panel][1] = drivers[panel][1].currentPosition(); //set origin at current position (hard limit)
+        drivers[panel][1].moveTo(origin[panel][1] - 50 * PITCH_STEPS_PER_DEG); //move -50 from current position to true origin
         drivers[panel][1].runToPosition();
-        origin[panel][1] = drivers[panel][1].currentPosition();
+
+        origin[panel][1] = drivers[panel][1].currentPosition(); //set origin at current position (true origin)
+        
+        //end panel calibration
         Serial.print("Calibration complete for panel ");
         Serial.println(panel+1);
-        calibrated = 1;
-
-
-
-
+        calibrated = 1;  
       }
+
+      //call for input again if not 0 or 1
       else {
         Serial.println("Invalid input. 1 to move further, 0 to finish calibration.");
       }
@@ -280,8 +302,6 @@ void calibratePitch(int panel) {
   }
  
 }
-
-
 
 
 void loop() {
