@@ -13,28 +13,82 @@ PageManager:
     HomePage:
     CalibrationPage:
     DefinePage:
-    AdjustPage:
+    TeachingPage:
+
+<VKeyboard>:
+    layout: 'numeric.json'
+    key_background_color: [16, 0, 16, 1]
+    background_color: [8, 8, 8, 1]
 
 <LandingPage>:
     name: "landing_page"
 
+    # on_pre_enter:
+    #     app.root.ids.zoil_cam.to_update = False
+    #     app.root.ids.teaching1_cam.to_update = False
+    #     app.root.ids.teaching2_cam.to_update = False
+
     FloatLayout:
+
+        MDLabel:
+            text:
+                "ZoilDef"
+            halign: "center"
+            theme_text_color: "Custom"
+            text_color: "magenta"
+            font_size: "130sp"
+            size: self.texture_size
+            bold: True
+            pos_hint: {'center_x': 0.5, 'center_y': 0.8}
+
+        MDLabel:
+            text:
+                "OR Lights Touchscreen Interface"
+            halign: "center"
+            theme_text_color: "Primary"
+            font_style: "H4"
+            size: self.texture_size
+            pos_hint: {'center_x': 0.5, 'center_y': 0.68}
+
+        MDLabel:
+            text:
+                """
+                Before connecting, ensure the lighting system is powered on and configured with your host IP ({my_ip}).\n
+                If a connection cannot be established in {timeout} seconds, this system will time out.\n
+                When you are ready to connect, press the CONNECT button below.
+                """.format(my_ip=app.my_config.my_ip, timeout=app.my_config.timeout)
+            halign: "center"
+            theme_text_color: "Secondary"
+            font_style: "Body1"
+            size: self.texture_size
+            pos_hint: {'center_x': 0.5, 'center_y': 0.5}
 
         MDRectangleFlatButton:
             text: "CONNECT"
             size_hint: (0.3, 0.2)
-            pos_hint: {'x': 0.35, "y": 0.2}
+            pos_hint: {'center_x': 0.5, 'center_y': 0.25}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "60sp"
 
             on_release:
+                app.my_config.connect()
                 app.root.current = "home_page"
                 root.manager.transition.direction = "left"
 
 <HomePage>:
     name: "home_page"
 
+    # on_pre_enter:
+    #     app.root.ids.zoil_cam.to_update = True
+    #     app.root.ids.teaching1_cam.to_update = False
+    #     app.root.ids.teaching2_cam.to_update = False
+
     FloatLayout:
 
         KivyCamera:
+            capture: app.zoil_def_capture
             allow_stretch: True
             size_hint_y: 0.9
             size_hint_x: 0.9* 9/16 * root.height / root.width
@@ -44,6 +98,10 @@ PageManager:
             text: "Calibrate"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.75}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "40sp"
 
             on_release:
                 app.root.current = "calibration_page"
@@ -53,26 +111,40 @@ PageManager:
             text: "Define ZOIL"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.5}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "40sp"
 
             on_release:
                 app.root.current = "define_page"
                 root.manager.transition.direction = "left"
 
         MDRectangleFlatButton:
-            text: "Load Configuration"
+            text: "Teaching"
             size_hint: (0.3, 0.2)
             pos_hint: {"center_x": 0.75, "center_y": 0.25}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "40sp"
 
             on_release:
-                app.root.current = "home_page"
+                app.root.current = "teaching_page"
                 root.manager.transition.direction = "left"
 
 <CalibrationPage>:
     name: "calibration_page"
 
+    # on_pre_enter:
+    #     app.root.ids.zoil_cam.to_update = True
+    #     app.root.ids.teaching1_cam.to_update = False
+    #     app.root.ids.teaching2_cam.to_update = False
+
     FloatLayout:
         
         KivyCamera:
+            capture: app.zoil_def_capture
             allow_stretch: True
             size_hint_y: 0.9
             size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
@@ -84,22 +156,112 @@ PageManager:
             size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
             pos_hint: {"center_x": 0.25, "center_y": 0.5}
 
-        TextInput:
-            size_hint: (0.3, 0.1)
-            pos_hint: {"center_x": 0.75, "center_y": 0.8}
+        MDLabel:
+            text: "Table Length"
+            halign: "right"
+            size_hint: (0.15, 0.05)
+            pos_hint: {"right": 0.75, "center_y": 0.85}
 
         TextInput:
-            size_hint: (0.3, 0.1)
-            pos_hint: {"center_x": 0.75, "center_y": 0.65}
+            id: length_input
+            size_hint: (0.1, 0.05)
+            pos_hint: {"center_x": 0.825, "center_y": 0.85}
+
+        MDLabel:
+            text: "in"
+            halign: "left"
+            size_hint: (0.05, 0.05)
+            pos_hint: {"right": 0.95, "center_y": 0.85}
+
+        MDLabel:
+            text: "Table Width"
+            halign: "right"
+            size_hint: (0.15, 0.05)
+            pos_hint: {"right": 0.75, "center_y": 0.72}
 
         TextInput:
+            id: width_input
+            size_hint: (0.1, 0.05)
+            pos_hint: {"center_x": 0.825, "center_y": 0.72}
+
+        MDLabel:
+            text: "in"
+            halign: "left"
+            size_hint: (0.05, 0.05)
+            pos_hint: {"right": 0.95, "center_y": 0.72}
+
+        MDLabel:
+            text: "Table Height"
+            halign: "right"
+            size_hint: (0.15, 0.05)
+            pos_hint: {"right": 0.75, "center_y": 0.59}
+
+        TextInput:
+            id: height_input
+            size_hint: (0.1, 0.05)
+            pos_hint: {"center_x": 0.825, "center_y": 0.59}
+
+        MDLabel:
+            text: "in"
+            halign: "left"
+            size_hint: (0.05, 0.05)
+            pos_hint: {"right": 0.95, "center_y": 0.59}
+
+        MDRectangleFlatButton:
+            text: "Reset"
+            size_hint: (0.14, 0.1)
+            pos_hint:{"center_x": 0.67, "center_y": 0.25}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "30sp"
+
+            on_release:
+                cal_dims.rect_x = cal_dims.prev_x
+                cal_dims.rect_y = cal_dims.prev_y
+                cal_dims.rect_w = cal_dims.prev_w
+                cal_dims.rect_l = cal_dims.prev_l
+                cal_dims.draw_rect(cal_dims.rect_x, cal_dims.rect_y, cal_dims.rect_w, cal_dims.rect_l)
+
+        MDRectangleFlatButton:
+            text: "Clear"
+            size_hint: (0.14, 0.1)
+            pos_hint:{"center_x": 0.83, "center_y": 0.25}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "30sp"
+
+            on_release:
+                cal_dims.reset()
+
+        MDRectangleFlatButton:
+            text: "Set Table Calibration"
             size_hint: (0.3, 0.1)
-            pos_hint: {"center_x": 0.75, "center_y": 0.5}
+            pos_hint:{"center_x": 0.75, "center_y": 0.1}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "30sp"
+
+            on_release:
+                cal_dims.set_inputs(app.my_config, length_input, width_input, height_input)
+                
+                app.my_config.pixel_l = 0 if cal_dims.rect_l == 0 else cal_dims.rect_l
+                app.my_config.pixel_w = 0 if cal_dims.rect_w == 0 else cal_dims.rect_w
+
+                cal_dims.prev_x = cal_dims.rect_x
+                cal_dims.prev_y = cal_dims.rect_y
+                cal_dims.prev_w = cal_dims.rect_w
+                cal_dims.prev_l = cal_dims.rect_l
 
         MDIconButton:
             icon: "home"
+            icon_size: "60sp"
+            theme_icon_color: "Custom"
+            icon_color: "gray"
             size_hint: (0.3, 0.2)
-            pos_hint: {"center_x": 0.75, "center_y": 0.25}
+            pos_hint: {"center_x": 0.95, "center_y": 0.1}
 
             on_release:
                 app.root.current = "home_page"
@@ -109,9 +271,16 @@ PageManager:
 <DefinePage>:
     name: "define_page"
 
+    # on_pre_enter:
+    #     app.root.ids.zoil_cam.to_update = True
+    #     app.root.ids.teaching1_cam.to_update = False
+    #     app.root.ids.teaching2_cam.to_update = False
+
     FloatLayout:
         
         KivyCamera:
+            id: zoil_cam
+            capture: app.zoil_def_capture
             allow_stretch: True
             size_hint_y: 0.9
             size_hint_x: 0.9 * 9/16 * self.parent.height / self.parent.width
@@ -125,25 +294,88 @@ PageManager:
 
         MDIconButton:
             icon: "home"
+            icon_size: "60sp"
+            theme_icon_color: "Custom"
+            icon_color: "gray"
             size_hint: (0.3, 0.2)
-            pos_hint: {"center_x": 0.825, "center_y": 0.15}
+            pos_hint: {"center_x": 0.95, "center_y": 0.1}
+
+            on_release:
+                app.root.current = "home_page"
+                root.manager.transition.direction = "left"
 
             on_release:
                 app.root.current = "home_page"
                 root.manager.transition.direction = "left"
 
         MDRectangleFlatButton:
-            text: "Confirm\nZOIL"
-            size_hint: (0.15, 0.1)
-            pos_hint:{"center_x": 0.675, "center_y": 0.15}
+            text: "Reset"
+            size_hint: (0.14, 0.1)
+            pos_hint:{"center_x": 0.67, "center_y": 0.25}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "30sp"
 
             on_release:
-                my_config.transmit()
+                zoil_coords.cent_x = zoil_coords.prev_x
+                zoil_coords.cent_y = zoil_coords.prev_x
+                zoil_coords.rad = zoil_coords.prev_rad
+                brightness_slider.value = app.my_config.b
+                zoil_coords.draw_circle()
+
+        MDRectangleFlatButton:
+            text: "Clear"
+            size_hint: (0.14, 0.1)
+            pos_hint:{"center_x": 0.83, "center_y": 0.25}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "30sp"
+
+            on_release:
+                brightness_slider.value = 0
+                zoil_coords.reset()
+
+        MDRectangleFlatButton:
+            text: "Confirm ZOIL"
+            size_hint: (0.3, 0.1)
+            pos_hint:{"center_x": 0.75, "center_y": 0.1}
+            md_bg_color: "magenta"
+            text_color: "white"
+            line_color: 0, 0, 0, 0
+            font_size: "30sp"
+
+            on_release:
+                # cent_x and cent_y represent circle center
+                # center_x and center_y represent widget center
+                pix_width = zoil_coords.width if app.my_config.pixel_w == 0 else app.my_config.pixel_w 
+                pix_length = zoil_coords.height if app.my_config.pixel_l == 0 else app.my_config.pixel_l
+                diff_x = (zoil_coords.cent_x - zoil_coords.center_x) * app.my_config.width_size / pix_width
+                diff_y = (zoil_coords.cent_y - zoil_coords.center_y) * app.my_config.len_size / pix_length
+                diff_rad = zoil_coords.rad * app.my_config.width_size / pix_width
+                # print(diff_x, diff_y, diff_rad)
+                app.my_config.update_zoil(diff_x, diff_y, diff_rad, brightness_slider.value)
+                app.my_config.format_transmit()
+
+                zoil_coords.prev_x = zoil_coords.cent_x
+                zoil_coords.prev_y = zoil_coords.cent_y
+                zoil_coords.prev_rad = zoil_coords.rad
+
+        MDLabel:
+            text:
+                "Position\nAdjustment"
+            halign: "center"
+            theme_text_color: "Secondary"
+            font_style: "H6"
+            size: self.texture_size
+            pos_hint: {'center_x': 0.75, 'center_y': 0.8}
 
         MDIconButton:
             icon: "chevron-down-circle-outline"
             size_hint: (0.1, 0.1)
-            pos_hint: {"center_x": 0.75, "center_y": 0.6}
+            icon_size: "40sp"
+            pos_hint: {"center_x": 0.75, "center_y": 0.7}
 
             on_release:
                 zoil_coords.shift(0, -4)
@@ -151,7 +383,8 @@ PageManager:
         MDIconButton:
             icon: "chevron-up-circle-outline"
             size_hint: (0.1, 0.1)
-            pos_hint: {"center_x": 0.75, "center_y": 0.8}
+            icon_size: "40sp"
+            pos_hint: {"center_x": 0.75, "center_y": 0.9}
 
             on_release:
                 zoil_coords.shift(0, 4)
@@ -159,7 +392,8 @@ PageManager:
         MDIconButton:
             icon: "chevron-left-circle-outline"
             size_hint: (0.1, 0.1)
-            pos_hint: {"center_x": 0.65, "center_y": 0.7}
+            icon_size: "40sp"
+            pos_hint: {"center_x": 0.68, "center_y": 0.8}
 
             on_release:
                 zoil_coords.shift(-4, 0)
@@ -167,15 +401,26 @@ PageManager:
         MDIconButton:
             icon: "chevron-right-circle-outline"
             size_hint: (0.1, 0.1)
-            pos_hint: {"center_x": 0.85, "center_y": 0.7}
+            icon_size: "40sp"
+            pos_hint: {"center_x": 0.82, "center_y": 0.8}
 
             on_release:
                 zoil_coords.shift(4, 0)
 
+        MDLabel:
+            text:
+                "Size\nAdjustment"
+            halign: "center"
+            theme_text_color: "Secondary"
+            font_style: "H6"
+            size: self.texture_size
+            pos_hint: {'center_x': 0.75, 'center_y': 0.53}
+
         MDIconButton:
             icon: "minus-circle"
             size_hint: (0.1, 0.1)
-            pos_hint: {"center_x": 0.7, "center_y": 0.4}
+            icon_size: "40sp"
+            pos_hint: {"center_x": 0.68, "center_y": 0.53}
 
             on_release:
                 zoil_coords.resize(-4)
@@ -183,15 +428,111 @@ PageManager:
         MDIconButton:
             icon: "plus-circle"
             size_hint: (0.1, 0.1)
-            pos_hint: {"center_x": 0.8, "center_y": 0.4}
+            icon_size: "40sp"
+            pos_hint: {"center_x": 0.82, "center_y": 0.53}
 
             on_release:
                 zoil_coords.resize(4)
 
-        MDSlider:
-            size_hint: (0.35, 0.1)
-            hint: False
-            pos_hint: {"center_x": 0.75, "center_y": 0.3}
+        MDIcon:
+            icon: "brightness-7"
+            size_hint: (0.1, 0.1)
+            pos_hint: {"center_x": 0.62, "center_y": 0.4}
 
-<AdjustPage>:
-    name: "adjust_page"
+        MDIcon:
+            icon: "brightness-5"
+            size_hint: (0.1, 0.1)
+            pos_hint: {"center_x": 0.88, "center_y": 0.4}
+
+        MDSlider:
+            id: brightness_slider
+            color: "magenta"
+            thumb_color_active: "magenta"
+            size_hint: (0.25, 0.1)
+            hint: False
+            min: 0
+            max: 5
+            step: 1
+            pos_hint: {"center_x": 0.75, "center_y": 0.4}
+
+<TeachingPage>:
+    name: "teaching_page"
+
+    # on_pre_enter:
+    #     app.root.ids.zoil_cam.to_update = False
+    #     app.root.ids.teaching1_cam.to_update = True
+    #     app.root.ids.teaching2_cam.to_update = True
+
+    FloatLayout:
+
+        MDLabel:
+            text:
+                "Teaching Camera 1"
+            halign: "center"
+            theme_text_color: "Primary"
+            font_style: "H4"
+            size: self.texture_size
+            pos_hint: {'center_x': 0.16, 'center_y': 0.74}
+
+        KivyCamera:
+            id: teaching1_cam
+            capture: app.teaching1_capture
+            allow_stretch: True
+            crop_scale: 1
+            rot: False
+            flip: False
+            size_hint_y: 0.4 * 9/16 * self.parent.width / self.parent.height
+            size_hint_x: 0.4
+            pos_hint: {"center_x": 0.25, "center_y": 0.5}
+
+        MDLabel:
+            text:
+                "Teaching Camera 2"
+            halign: "center"
+            theme_text_color: "Primary"
+            font_style: "H4"
+            size: self.texture_size
+            pos_hint: {'center_x': 0.66, 'center_y': 0.74}
+
+        KivyCamera:
+            id: teaching2_cam
+            capture: app.teaching2_capture
+            allow_stretch: True
+            crop_scale: 1
+            rot: False
+            flip: False
+            size_hint_y: 0.4 * 9/16 * self.parent.width / self.parent.height
+            size_hint_x: 0.4
+            pos_hint: {"center_x": 0.75, "center_y": 0.5}
+
+        # KivyCamera:
+        #     capture: app.teaching2_capture
+        #     allow_stretch: True
+        #     crop_scale: 1
+        #     rot: False
+        #     flip: False
+        #     size_hint_y: 0.4 * 9/16 * self.parent.width / self.parent.height
+        #     size_hint_x: 0.4
+        #     pos_hint: {"center_x": 0.25, "center_y": 0.25}
+
+        # KivyCamera:
+        #     capture: app.teaching1_capture
+        #     allow_stretch: True
+        #     crop_scale: 1
+        #     rot: False
+        #     flip: False
+        #     size_hint_y: 0.4 * 9/16 * self.parent.width / self.parent.height
+        #     size_hint_x: 0.4
+        #     pos_hint: {"center_x": 0.7, "center_y": 0.25}
+
+        MDIconButton:
+            icon: "home"
+            icon_size: "60sp"
+            theme_icon_color: "Custom"
+            icon_color: "gray"
+            size_hint: (0.3, 0.2)
+            pos_hint: {"center_x": 0.95, "center_y": 0.1}
+
+            on_release:
+                app.root.current = "home_page"
+                root.manager.transition.direction = "left"
